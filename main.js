@@ -9,7 +9,7 @@ const lessons = [
 const quizData = [
     { lessonId: 1, english: "The woman loves water", tvaali: "sidhi aaloo thaim", type: "en_to_tv" },
     { lessonId: 1, tvaali: "sidhi aaloo thaim", english: "the woman loves water", type: "tv_to_en" },
-    { lessonId: 2, english: "The bird eats", tvaali: "djaavuum vadi", type: "en_to_tv" }
+    { lessonId: 2, english: "The bird eats", tvaali: "djaavuum thiihes", type: "en_to_tv" }
 ];
 
 let activeQuestions = []; // This will hold the questions for the current session
