@@ -1,8 +1,26 @@
 @font-face {
     font-family:TvaaliFormal;
-    src: url(assets/font/tvaaliFormal.oft);
+    src: url(assets/font/tvaaliFormal.otf);
   }
 
+  /* This class will handle your Top-to-Bottom, Right-to-Left feel */
+.vertical-script {
+    writing-mode: vertical-rl; /* Built-in browser support for RTL vertical */
+    text-orientation: mixed;   /* Keeps characters upright or rotated based on font */
+    transform: rotate(90deg);  /* Your specific font requirement */
+    display: inline-block;
+}
+
+#user-input {
+    padding: 10px;
+    font-size: 1rem;
+    width: 300px;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
 
 #test{
     position:absolute;
