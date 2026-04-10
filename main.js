@@ -1,31 +1,75 @@
-// Current possible quizes 
-const quizData = [
-    {
-        english: "The woman loves water",
-        tvaali: "sidhi aaloo thaim",
-        type: "en_to_tv"
-    },
-    {
-        tvaali: "sidhi aaloo thaim",
-        english: "the woman loves water",
-        type: "tv_to_en"
-    }
+// Creating lessons
+const lessons = [
+    { id: 1, title: "Lesson 1: Basics", description: "Learn 'Woman' and 'Water'" },
+    { id: 2, title: "Lesson 2: Animals", description: "Learn 'Animal' and 'Bird'" },
+    { id: 3, title: "Lesson 3: Cases", description: "Introduction to the Accusative" }
 ];
 
+// Current possible quizes 
+const quizData = [
+    { lessonId: 1, english: "The woman loves water", tvaali: "sidhi aaloo thaim", type: "en_to_tv" },
+    { lessonId: 1, tvaali: "sidhi aaloo thaim", english: "the woman loves water", type: "tv_to_en" },
+    { lessonId: 2, english: "The bird eats", tvaali: "djaavuum vadi", type: "en_to_tv" }
+];
+
+let activeQuestions = []; // This will hold the questions for the current session
 let currentStep = 0; // Makes sure the question is en -> tv and tv -> en
 let isCorrect = false; // Track if current question is solved
 
-// Writes the HTML code to render the website
-function renderApp() {
+// Functions
+
+// Make homepage
+function showHome() {
     const app = document.getElementById('app');
-    const q = quizData[currentStep];
+    
+    // 1. Set up the header
+    let html = `
+        <h1>Tvaali Language App</h1>
+        <p>Select a lesson to begin:</p>
+        <div id="lesson-list">
+    `;
+
+    // 2. Loop through your lessons and add a button for each
+    lessons.forEach(lesson => {
+        html += `
+            <div class="lesson-card">
+                <h3>${lesson.title}</h3>
+                <p>${lesson.description}</p>
+                <button onclick="startLesson(${lesson.id})">Start</button>
+            </div>
+        `;
+    });
+
+    // 3. Close the div and inject it into the app
+    html += `</div>`;
+    app.innerHTML = html;
+}
+
+// Start the lesson
+function startLesson(id) {
+    // 1. Filter questions by the ID passed from the button
+    activeQuestions = quizData.filter(q => q.lessonId === id);
+
+    // 2. Safety check: make sure the lesson isn't empty
+    if (activeQuestions.length > 0) {
+        currentStep = 0;    // Reset progress
+        renderQuestion();        // Call your quiz renderer
+    } else {
+        alert("This lesson is still under construction!");
+    }
+}
+
+// Writes the HTML code to render the website
+function renderQuestion() {
+    const app = document.getElementById('app');
+    const q = activeQuestions[currentStep];
     isCorrect = false; 
 
     const prompt = q.type === "en_to_tv" ? q.english : q.tvaali;
     const label = q.type === "en_to_tv" ? "Translate to Tvaali:" : "Translate to English:";
 
     app.innerHTML = `
-        <h1>Tvaali Lesson 1</h1>
+        <h1>Lesson ${q.lessonId}</h1>
         <div class="card">
             <p><strong>${label}</strong></p>
             <h2>${prompt}</h2>
@@ -46,7 +90,7 @@ function checkAnswer() {
     const userInput = document.getElementById('user-input').value.trim().toLowerCase();
     const feedback = document.getElementById('feedback');
     const nextBtn = document.getElementById('next-btn');
-    const q = quizData[currentStep];
+    const q = activeQuestions[currentStep];
 
     const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
 
@@ -65,8 +109,8 @@ function checkAnswer() {
 // Next question maker
 function nextQuestion() {
     currentStep++;
-    if (currentStep < quizData.length) {
-        renderApp();
+    if (currentStep < activeQuestions.length) {
+        renderQuestion();
     } else {
         showEndScreen();
     }
@@ -77,11 +121,11 @@ function showEndScreen() {
     document.getElementById('app').innerHTML = `
         <div class="card">
             <h1>Lesson Complete!</h1>
-            <p>You've mastered these Tvaali basics.</p>
+            <p>You've mastered lesson ${q.lessonId}.</p>
             <button id="home-btn">Take me Home (Enter)</button>
         </div>
     `;
-    document.getElementById('home-btn').onclick = () => location.reload();
+    document.getElementById('home-btn').onclick = () => showHome();
 }
 
 // Global enter check
@@ -104,4 +148,4 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-renderApp();
+showHome();
