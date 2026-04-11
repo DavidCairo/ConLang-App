@@ -1,6 +1,4 @@
 progress bars
 more complete lesson structure
-learn new words in purple with hits
-hover over text for hints
 script learner based on arabic
 multiple language compatible

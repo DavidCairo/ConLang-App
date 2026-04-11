@@ -68,3 +68,130 @@ button {
 .lesson-card:hover {
     border-color: #58cc02;
 }
+
+.info-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #5a3e8e;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* The Modal (hidden by default) */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 70%;
+    border-radius: 10px;
+}
+
+/* Sidebar or Nav Container */
+.nav-container {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.dict-btn {
+    background-color: #2a9d8f;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Dictionary Table Styles */
+.dict-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.dict-table th, .dict-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.dict-table th {
+    background-color: #f4f4f4;
+}
+
+/* Container for the word */
+.word-tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: none; /* This removes the dashed line */
+    cursor: help;
+    transition: color 0.2s ease;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+/* Optional: Highlight the word itself when hovering */
+.word-tooltip:hover {
+    background-color: rgba(42, 157, 143, 0.1); /* Very light teal tint */
+    color: #264653; /* Slightly darker text color */
+}
+
+/* Keep your .tooltip-text styles as they were, or refine them here */
+.word-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 140px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%; 
+    left: 50%;
+    transform: translateX(-50%); /* Better centering than margin-left */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    pointer-events: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.word-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-text {
+    border-top: 1px solid #555;
+    margin-top: 5px;
+    padding-top: 5px;
+    display: block;
+    font-style: italic;
+    color: #2a9d8f; /* Give the Tvaali translation a distinct color */
+}
+
+/* Style for words in the lesson's newWords list */
+.new-word-highlight {
+    color: #8e44ad; /* A solid purple */
+    font-weight: bold;
+    border-bottom: 2px solid #8e44ad; /* A little purple "New" indicator */
+}

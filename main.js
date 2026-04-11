@@ -1,14 +1,8 @@
-// Creating lessons
-const lessons = [
-    { id: 1, title: "Lesson 1: Basics", description: "Learn 'Woman' and 'Water'" },
-    { id: 2, title: "Lesson 2: Animals", description: "Learn 'Animal' and 'Bird'" },
-    { id: 3, title: "Lesson 3: Cases", description: "Introduction to the Accusative" }
-];
-
 // Current possible quizes 
 const quizData = [
-    ...lesson1Data
+    ...lesson1Data.questions
 ];
+const allLessons = [lesson1Data]
 
 let activeQuestions = []; // This will hold the questions for the current session
 let currentStep = 0; // Makes sure the question is en -> tv and tv -> en
@@ -17,41 +11,163 @@ let isCorrect = false; // Track if current question is solved
 // Functions
 
 // Make homepage
-function showHome() {
+// Add to your main.js
+
+function renderHome() {
     const app = document.getElementById('app');
     
-    // 1. Set up the header
-    let html = `
-        <h1>Tvaali Language App</h1>
-        <p>Select a lesson to begin:</p>
-        <div id="lesson-list">
+    // Add a navigation bar at the top or side
+    app.innerHTML = `
+        <div class="nav-container">
+            <button class="dict-btn" onclick="renderDictionary()">📖 Dictionary</button>
+        </div>
+        <h1>Tvaali Lessons</h1>
+        <div id="lesson-list"></div>
     `;
-
-    // 2. Loop through your lessons and add a button for each
-    lessons.forEach(lesson => {
-        html += `
-            <div class="lesson-card">
-                <h3>${lesson.title}</h3>
-                <p>${lesson.description}</p>
-                <button onclick="startLesson(${lesson.id})">Start</button>
-            </div>
+    
+    const list = document.getElementById('lesson-list');
+    allLessons.forEach(lesson => {
+        const div = document.createElement('div');
+        div.className = 'lesson-card';
+        div.style.position = 'relative';
+        div.innerHTML = `
+            <h3>Lesson ${lesson.id}: ${lesson.title}</h3>
+            <div class="info-icon" onclick="showInfo(${lesson.id})">i</div>
+            <button onclick="startLesson(${lesson.id})">Start</button>
         `;
+        list.appendChild(div);
     });
+}
 
-    // 3. Close the div and inject it into the app
-    html += `</div>`;
+function renderDictionary() {
+    const app = document.getElementById('app');
+    
+    let html = `
+        <div class="nav-container">
+            <button class="dict-btn" onclick="renderHome()">⬅ Back to Lessons</button>
+        </div>
+        <h1>Tvaali Dictionary</h1>
+        
+        <h3>Nouns</h3>
+        <table class="dict-table">
+            <thead>
+                <tr><th>English</th><th>Tvaali Root</th><th>Class</th></tr>
+            </thead>
+            <tbody>
+                ${Object.keys(nouns).map(key => `
+                    <tr>
+                        <td>${key}</td>
+                        <td>${nouns[key].root}</td>
+                        <td>${nouns[key].class}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <h3>Verbs</h3>
+        <table class="dict-table">
+            <thead>
+                <tr><th>English</th><th>Stem</th><th>Transitive</th></tr>
+            </thead>
+            <tbody>
+                ${Object.keys(verbs).map(key => `
+                    <tr>
+                        <td>${key}</td>
+                        <td>${verbs[key].stem}</td>
+                        <td>${verbs[key].trans ? 'Yes' : 'No'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    
     app.innerHTML = html;
 }
 
-// Start the lesson
-function startLesson(id) {
-    // 1. Filter questions by the ID passed from the button
-    activeQuestions = quizData.filter(q => q.lessonId === id);
+// Function to show the popup
+window.showInfo = function(id) {
+    const lesson = allLessons.find(l => l.id === id);
+    
+    // Create or find the modal element
+    let modal = document.getElementById('infoModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'infoModal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>About Lesson ${lesson.id}</h2>
+            <p>${lesson.description}</p>
+            <h4>New Vocabulary:</h4>
+            <ul>
+                ${lesson.newWords.map(word => `<li>${word}</li>`).join('')}
+            </ul>
+            <button onclick="document.getElementById('infoModal').style.display='none'">Close</button>
+        </div>
+    `;
+};
 
-    // 2. Safety check: make sure the lesson isn't empty
+// Hover over word to show translation
+function wrapWords(sentence, isTvaali = false, newWordsList = []) {
+    if (!sentence) return "";
+    const text = Array.isArray(sentence) ? sentence[0] : sentence;
+    const words = text.split(" ");
+    
+    return words.map(word => {
+        const cleanWord = word.toLowerCase().replace(/[.,!?;]/g, "");
+        const particles = ["the", "a", "an", "is", "are"];
+        if (particles.includes(cleanWord)) return word;
+
+        let info = "";
+
+        // 1. TRANSLATION LOGIC
+        if (isTvaali) {
+            const nounMatch = Object.entries(nouns).find(([k, v]) => cleanWord.includes(v.root.toLowerCase()));
+            const verbMatch = Object.entries(verbs).find(([k, v]) => cleanWord.includes(v.stem.toLowerCase()));
+            if (nounMatch) info = `En: ${nounMatch[0]} | Class: ${nounMatch[1].class}`;
+            else if (verbMatch) info = `En: ${verbMatch[0]} | Verb Stem`;
+        } else {
+            const nounKey = Object.keys(nouns).find(key => cleanWord === key || cleanWord.startsWith(key));
+            const verbKey = Object.keys(verbs).find(key => cleanWord === key || cleanWord.startsWith(key) || key.startsWith(cleanWord));
+            if (nounKey) info = `Tv: ${nouns[nounKey].root} | Class: ${nouns[nounKey].class}`;
+            else if (verbKey) info = `Tv: ${verbs[verbKey].stem}`;
+        }
+
+        // 2. HIGHLIGHT LOGIC (Now with Fuzzy Matching)
+        let highlightClass = "";
+        
+        // We check if the cleanWord matches OR starts with any of our new words
+        const isNewInLesson = newWordsList.some(nw => {
+            const cleanNW = nw.toLowerCase();
+            return cleanWord === cleanNW || 
+                   cleanWord.startsWith(cleanNW) || 
+                   (isTvaali && cleanWord.includes(cleanNW));
+        });
+
+        if (isNewInLesson && !seenWords.has(cleanWord)) {
+            highlightClass = "new-word-highlight";
+        }
+
+        if (info) {
+            return `<span class="word-tooltip ${highlightClass}">${word}<span class="tooltip-text">${info}</span></span>`;
+        }
+        return word; 
+    }).join(" ");
+}
+
+// Start the lesson
+let seenWords = new Set(); // Tracks words encountered in the current lesson
+
+function startLesson(id) {
+    activeQuestions = quizData.filter(q => q.lessonId === id);
     if (activeQuestions.length > 0) {
-        currentStep = 0;    // Reset progress
-        renderLesson();     // Call your quiz renderer
+        seenWords.clear(); // Clear the list when a new lesson starts
+        currentStep = 0;
+        renderLesson();
     } else {
         alert("This lesson is still under construction!");
     }
@@ -61,23 +177,35 @@ function startLesson(id) {
 function renderLesson() {
     const app = document.getElementById('app');
 
-    // Safety Guard: If there's no data, go home
+    // 1. Safety Guard
     if (!activeQuestions || activeQuestions.length === 0) {
-        showHome();
+        renderHome();
         return;
     }
 
     const q = activeQuestions[currentStep];
     isCorrect = false; 
 
-    const prompt = q.type === "en_to_tv" ? q.english : q.tvaali;
-    const label = q.type === "en_to_tv" ? "Translate to Tvaali:" : "Translate to English:";
+    // 2. Logic for labels and tooltips
+    const isTvaaliPrompt = q.type === "tv_to_en";
+    const label = isTvaaliPrompt ? "Translate to English:" : "Translate to Tvaali:";
+    
+    // We get the raw text based on the question type
+    const rawPromptText = isTvaaliPrompt ? q.tvaali : q.english;
+    
+    // Get the newWords array from the current lesson data
+    const currentLesson = allLessons.find(l => l.id === q.lessonId);
+    const newWordsList = currentLesson ? currentLesson.newWords : [];
 
+    // Pass that list into the wrapper
+    const wrappedPrompt = wrapWords(rawPromptText, isTvaaliPrompt, newWordsList);
+
+    // 3. Single Render (Merge all variables here)
     app.innerHTML = `
         <h1>Lesson ${q.lessonId}</h1>
         <div class="card">
             <p><strong>${label}</strong></p>
-            <h2>${prompt}</h2>
+            <h2>${wrappedPrompt}</h2>
             <input type="text" id="user-input" autocomplete="off" placeholder="Type here...">
             <button id="submit-btn">Check Answer</button>
             <p id="feedback"></p>
@@ -85,6 +213,7 @@ function renderLesson() {
         </div>
     `;
 
+    // 4. Attach Events
     document.getElementById('submit-btn').onclick = checkAnswer;
     document.getElementById('next-btn').onclick = nextQuestion;
     document.getElementById('user-input').focus();
@@ -124,6 +253,15 @@ function checkAnswer() {
 
 // Next question maker
 function nextQuestion() {
+    // Before moving to next step, mark the words in the current prompt as "seen"
+    const q = activeQuestions[currentStep];
+    const promptText = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
+    
+    promptText.split(" ").forEach(word => {
+        const clean = word.toLowerCase().replace(/[.,!?;]/g, "");
+        seenWords.add(clean);
+    });
+
     currentStep++;
     if (currentStep < activeQuestions.length) {
         renderLesson();
@@ -144,7 +282,7 @@ function showEndScreen() {
             <button id="home-btn">Take me Home (Enter)</button>
         </div>
     `;
-    document.getElementById('home-btn').onclick = () => showHome();
+    document.getElementById('home-btn').onclick = () => renderHome();
 }
 
 // Global enter check
@@ -167,4 +305,4 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-showHome();
+renderHome();
