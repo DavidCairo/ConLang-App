@@ -7,9 +7,7 @@ const lessons = [
 
 // Current possible quizes 
 const quizData = [
-    { lessonId: 1, english: "The woman loves water", tvaali: "sidhi aaloo thaim", type: "en_to_tv" },
-    { lessonId: 1, tvaali: "sidhi aaloo thaim", english: "the woman loves water", type: "tv_to_en" },
-    { lessonId: 2, english: "The bird eats", tvaali: "djaavuum thiihes", type: "en_to_tv" }
+    ...lesson1Data
 ];
 
 let activeQuestions = []; // This will hold the questions for the current session
@@ -53,15 +51,22 @@ function startLesson(id) {
     // 2. Safety check: make sure the lesson isn't empty
     if (activeQuestions.length > 0) {
         currentStep = 0;    // Reset progress
-        renderQuestion();        // Call your quiz renderer
+        renderLesson();     // Call your quiz renderer
     } else {
         alert("This lesson is still under construction!");
     }
 }
 
 // Writes the HTML code to render the website
-function renderQuestion() {
+function renderLesson() {
     const app = document.getElementById('app');
+
+    // Safety Guard: If there's no data, go home
+    if (!activeQuestions || activeQuestions.length === 0) {
+        showHome();
+        return;
+    }
+
     const q = activeQuestions[currentStep];
     isCorrect = false; 
 
@@ -94,14 +99,25 @@ function checkAnswer() {
 
     const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
 
-    if (userInput === correctAnswer.toLowerCase()) {
+    let isInputCorrect = false;
+
+    if (Array.isArray(correctAnswer)) {
+        // If it's an array, check if the input matches any item in the list
+        isInputCorrect = correctAnswer.some(ans => ans.toLowerCase() === userInput);
+    } else {
+        // If it's just a single string
+        isInputCorrect = userInput === correctAnswer.toLowerCase();
+    }
+
+    if (isInputCorrect) {
         feedback.innerText = "Correct!";
         feedback.style.color = "green";
         isCorrect = true;
         nextBtn.style.display = "block";
         document.getElementById('submit-btn').style.display = "none";
     } else {
-        feedback.innerText = `Incorrect. Please try again!`;
+        const displayAnswer = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
+        feedback.innerText = `Incorrect. A correct answer would be: ${displayAnswer}`;
         feedback.style.color = "red";
     }
 }
@@ -110,7 +126,7 @@ function checkAnswer() {
 function nextQuestion() {
     currentStep++;
     if (currentStep < activeQuestions.length) {
-        renderQuestion();
+        renderLesson();
     } else {
         showEndScreen();
     }
@@ -118,10 +134,13 @@ function nextQuestion() {
 
 // Endscreen maker
 function showEndScreen() {
+    // Get the ID from the first question of the active set instead
+    const lessonId = activeQuestions[0].lessonId;
+
     document.getElementById('app').innerHTML = `
         <div class="card">
             <h1>Lesson Complete!</h1>
-            <p>You've mastered lesson ${q.lessonId}.</p>
+            <p>You've mastered lesson ${lessonId}.</p>
             <button id="home-btn">Take me Home (Enter)</button>
         </div>
     `;
