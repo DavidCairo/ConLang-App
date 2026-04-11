@@ -3,7 +3,7 @@ const nounCaser = {
     getEndingType: function(word) {
         // If 'word' is undefined, null, or an empty string, return a fallback so the .slice() below doesn't crash the app.
         if (!word || typeof word !== 'string') {
-            console.error("NounCaser Error: getEndingType received an invalid word:", word);
+            console.error("nounCaser Error: getEndingType received an invalid word:", word);
             return "consonant"; 
         }
 

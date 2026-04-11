@@ -3,29 +3,25 @@ const lesson1Data = [
         lessonId: 1,
         type: "en_to_tv",
         english: "The woman loves water",
-        tvaali: nouns.woman.root + " " + 
-                nounCaser.getAccusative(nouns.water, "singular") + " " + 
-                "th" + verbs.love.stem // For now a simple th- as verb.js is not build yet. 
+        // Added "perfective" before "present"
+        tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present")
     },
     {
         lessonId: 1,
         type: "tv_to_en",
-        tvaali: nouns.woman.root + " " + 
-                nounCaser.getAccusative(nouns.water, "singular") + " " + 
-                "th" + verbs.love.stem,
+        tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present"),
         english: "the woman loves water"
     },
     {
         lessonId: 1,
         type: "en_to_tv",
         english: "The woman sleeps/The woman is sleeping",
-        // Intransitive: Subject + Verb
-        tvaali: nouns.woman.root + " " + "th" + verbs.sleep.stem
+        tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "present")
     },
     {
         lessonId: 1,
         type: "tv_to_en",
-        tvaali: nouns.woman.root + " " + verbs.sleep.stem,
+        tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "present"),
         english: ["the woman sleeps", "the woman is sleeping"]
     }
 ];
