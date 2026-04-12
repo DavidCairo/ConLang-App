@@ -13,17 +13,24 @@ const verbConjugator = {
 
     // 1. Helper to determine vowel weight
     isHeavy: function(char1, char2) {
-        if (!char1 || !char2) return false;
-        const pair = char1 + char2;
-        // Doubled vowels or diphthongs ai/oi are "Heavy"
-        return (char1 === char2 && "aeiou".includes(char1)) || 
-               (pair === "ai" || pair === "oi");
+        if (!char1) return false;
+        const heavySingles = "aoi";
+        // If char2 is provided, check for long vowels/diphthongs
+        if (char2) {
+            const pair = char1 + char2;
+            if ((char1 === char2 && "aeiou".includes(char1)) || (pair === "ai" || pair === "oi")) {
+                return true;
+            }
+        }
+        // If it's a single vowel, check if it's in the heavy list
+        return heavySingles.includes(char1);
     },
 
     // 1. Prefix pronoun
     getPronoun: function(vClass, person, formality, number) {
+        const cleanPerson = person.split(" ")[0];
 
-        if (person === "1st") {
+        if (cleanPerson === "1st") {
             if (vClass === "inc") {
                 if (number === "singular") return "";
                 if (number === "dual") return "iis";
@@ -35,7 +42,7 @@ const verbConjugator = {
                 if (number === "plural") return "iitha";
             }
         }
-        if (person === "2nd") {
+        if (cleanPerson === "2nd") {
             if (formality === "formal") {
                 if (number === "singular") return "iichte";
                 if (number === "dual") return "iichtes";
@@ -47,20 +54,20 @@ const verbConjugator = {
                 if (number === "plural") return "raa";
             }
         }
-        if (person === "3rd") {
+        if (cleanPerson === "3rd") {
             if (vClass === "animate") {
                 if (number === "singular") return "tha";
                 if (number === "dual") return "thasa";
                 if (number === "paucal") return "thadaa";
                 if (number === "plural") return "am";
-            } else if (pClass === "inanimate") {
+            } else if (vClass === "inanimate") {
                 if (number === "singular") return "ne";
                 if (number === "plural") return "pe";
             } else { 
                 return "rii"; // Abstract
             }
         }
-        if (person === "indef") {
+        if (cleanPerson === "indef") {
             if (vClass === "animate") {
                 if (number === "singular") return "vi";
                 if (number === "dual") return "vasa";
@@ -100,45 +107,75 @@ const verbConjugator = {
     },
 
     // 2. Suffix tense
-    getTense: function(tense, time) {
-        if (time === "present") {
-            if (tense === "perfective" || tense === "continuous") return "";
+    getTense: function(fullTense) {
+        if (!fullTense) return "";
+        
+        // Split "future perfective" into ["future", "perfective"]
+        const parts = fullTense.split(" ");
+        const time = parts[0];
+        const aspect = parts[1] || "perfective"; 
+
+        if (time === "present" && (aspect === "perfective" || aspect === "continuous")) {
+            return "";
         }
 
         const chart = {
-            perfective: { past: "ev", pluperfect: "echt", perfect: "an", fip: "es", present: "", futperfect: "e", fif: "i", future: "am", infinitive: "te" },
-            continuous: { past: "avi", pluperfect: "wach", perfect: "wan", fip: "wes", futperfect: "we", fif: "ai", future: "wum", infinitive: "aate" },
-            habitual: { past: "tsev", perfect: "tsan", present: "tse" }
+            perfective: { 
+                past: "evi", pluperfect: "echti", perfect: "an", 
+                "future in past": "es", present: "", "future perfect": "e", 
+                "future in future": "i", future: "am", indefinite: "te" 
+            },
+            continuous: { 
+                past: "avi", pluperfect: "wachi", perfect: "wan", 
+                "future in past": "wes", "future perfect": "we", 
+                "future in future": "ai", future: "wum", indefinite: "aate" 
+            },
+            habitual: { 
+                past: "tsevi", perfect: "tsan", present: "tse" 
+            }
         };
-        return chart[tense]?.[time] ?? "";
+
+        return chart[aspect]?.[time] ?? "";
     },
 
     applySuffixPhonology: function(stem, suffix) {
         if (!suffix) return stem;
-        const sLast = stem.slice(-1);
-        const sPenult = stem.slice(-2, -1);
-        const sufFirst = suffix[0];
-        const sufSecond = suffix[1];
+        const vowels = "aeiou";
+        const sLast = stem.slice(-1).toLowerCase();
+        const sPenult = stem.slice(-2, -1).toLowerCase();
+        const sufFirst = suffix[0].toLowerCase();
 
-        if (!"aeiou".includes(sLast)) return stem + suffix;
+        if (!vowels.includes(sLast)) return stem + suffix;
 
-        const stemIsHeavy = this.isHeavy(sPenult, sLast);
-        const sufIsHeavy = this.isHeavy(sufFirst, sufSecond);
+        const stemIsLong = this.isHeavy(sPenult, sLast); // e.g., 'aa'
+        const suffixStartsHeavy = this.isHeavy(sufFirst); // e.g., 'a', 'o', or 'i'
 
-        if (stemIsHeavy && !sufIsHeavy) return stem + suffix.slice(1);
-        if (sufIsHeavy && !stemIsHeavy) return stem.slice(0, -1) + suffix;
-        if (!stemIsHeavy && !sufIsHeavy) return stem.slice(0, -1) + suffix;
-        return stem + suffix.slice(1);
+        // RULE 1: Long vowels of the stem override suffixes
+        if (stemIsLong) {
+            const trimmedSuffix = vowels.includes(sufFirst) ? suffix.slice(1) : suffix;
+            return stem + trimmedSuffix;
+        }
+
+        // RULE 2: Heavy short vowels of the suffix override short stem vowels
+        if (suffixStartsHeavy) {
+            return stem.slice(0, -1) + suffix;
+        }
+
+        return stem + suffix;
     },
 
     // 3. THE MASTER BUILDER
-    conjugate: function(verbObj, vClass, person, number, tense = "perfective", time, formality = "informal") {
-        const rawPrefix = this.getPronoun(vClass, person, formality, number);
+    conjugate: function(verbObj, vClass, person, number, fullTense, formality = "informal") {
         const stem = verbObj.stem;
-
+        
+        // Handle Prefix
+        // Note: You'll need to map your "3rd animate" person string back to the logic
+        const rawPrefix = this.getPronoun(vClass, person, formality, number);
         let res = this.applyPrefixPhonology(rawPrefix, stem);
-        const rawSuffix = this.getTense(tense, time);
+
+        // Handle Suffix
+        const rawSuffix = this.getTense(fullTense);
         
         return this.applySuffixPhonology(res, rawSuffix);
-    }
+    },
 };

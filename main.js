@@ -4,19 +4,21 @@ const quizData = [
 ];
 const allLessons = [lesson1Data]
 
-let activeQuestions = []; // This will hold the questions for the current session
-let currentStep = 0; // Makes sure the question is en -> tv and tv -> en
-let isCorrect = false; // Track if current question is solved
-
-// Functions
+// 
+let activeLesson = null;
+let activeQuestions = [];
+let currentModuleIndex = 0; // Track which module we are in
+let currentSubStep = 0;      // Track progress within a module (like vocab or sorting)
+let seenWords = new Set();
+let isCorrect = false;
+let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
+let currentSubLessonIndex = 0; // Add this near 'currentModuleIndex'
 
 // Make homepage
-// Add to your main.js
-
 function renderHome() {
     const app = document.getElementById('app');
+    activeLesson = null;
     
-    // Add a navigation bar at the top or side
     app.innerHTML = `
         <div class="nav-container">
             <button class="dict-btn" onclick="renderDictionary()">📖 Dictionary</button>
@@ -26,19 +28,41 @@ function renderHome() {
     `;
     
     const list = document.getElementById('lesson-list');
+
     allLessons.forEach(lesson => {
         const div = document.createElement('div');
         div.className = 'lesson-card';
-        div.style.position = 'relative';
+        
+        const subLessons = lesson.subLessons || [];
+        
+        // Generate the segmented progress bar
+        const progressSegments = subLessons.map((sub, index) => {
+            const isDone = completedSubLessons.includes(`${lesson.id}-${index}`);
+            const statusClass = isDone ? 'segment-done' : 'segment-pending';
+            
+            return `
+                <div class="progress-segment ${statusClass}" 
+                     onclick="startSubLesson(${lesson.id}, ${index})"
+                     title="${sub.title}">
+                    <span class="segment-number">${index + 1}</span>
+                </div>
+            `;
+        }).join('');
+
         div.innerHTML = `
             <h3>Lesson ${lesson.id}: ${lesson.title}</h3>
-            <div class="info-icon" onclick="showInfo(${lesson.id})">i</div>
-            <button onclick="startLesson(${lesson.id})">Start</button>
+            <div class="lesson-progress-container">
+                <div class="progress-bar-line">
+                    ${progressSegments}
+                </div>
+            </div>
+            <p class="progress-text">${completedSubLessons.length} / ${subLessons.length} Parts Complete</p>
         `;
         list.appendChild(div);
     });
 }
 
+// Make the dictionary at the homepage
 function renderDictionary() {
     const app = document.getElementById('app');
     
@@ -47,44 +71,87 @@ function renderDictionary() {
             <button class="dict-btn" onclick="renderHome()">⬅ Back to Lessons</button>
         </div>
         <h1>Tvaali Dictionary</h1>
-        
-        <h3>Nouns</h3>
-        <table class="dict-table">
-            <thead>
-                <tr><th>English</th><th>Tvaali Root</th><th>Class</th></tr>
-            </thead>
-            <tbody>
-                ${Object.keys(nouns).map(key => `
-                    <tr>
-                        <td>${key}</td>
-                        <td>${nouns[key].root}</td>
-                        <td>${nouns[key].class}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
 
-        <h3>Verbs</h3>
-        <table class="dict-table">
-            <thead>
-                <tr><th>English</th><th>Stem</th><th>Transitive</th></tr>
-            </thead>
-            <tbody>
-                ${Object.keys(verbs).map(key => `
-                    <tr>
-                        <td>${key}</td>
-                        <td>${verbs[key].stem}</td>
-                        <td>${verbs[key].trans ? 'Yes' : 'No'}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
+        <div class="card sandbox-card">
+            <h3>Grammar Tester</h3>
+            <div class="sandbox-controls">
+                <select id="test-type" onchange="toggleSandboxFields()">
+                    <option value="noun">Noun Caser</option>
+                    <option value="verb">Verb Conjugator</option>
+                </select>
+
+                <input type="text" id="test-input" oninput="updateNumberOptions()" placeholder="Type a noun (e.g., woman, stone)">
+                
+                <div id="noun-fields">
+                    <select id="test-case">
+                        <option value="NOM">Nominative</option>
+                        <option value="ACC">Accusative</option>
+                        <option value="ERG">Ergative</option>
+                    </select>
+                    <select id="test-number"></select>
+                </div>
+
+                <div id="verb-fields" style="display:none;">
+                    <select id="test-person">
+                        <option value="1st inclusive">1st inclusive</option>
+                        <option value="1st exclusive">1st exclusive</option>
+                        <option value="2nd formal">2nd formal</option>
+                        <option value="2nd informal">2nd informal</option>
+                        <option value="3rd animate">3rd animate</option>
+                        <option value="3rd inanimate">3rd inanimate</option>
+                        <option value="3rd abstract">3rd abstract</option>
+                        <option value="indefinite animate">indefinite animate</option>
+                        <option value="indefinite inanimate">indefinite inanimate</option>
+                    </select>
+
+                    <select id="test-aspect" onchange="filterTenses()">
+                        <option value="perfective">Perfective</option>
+                        <option value="continuous">Continuous</option>
+                        <option value="habitual">Habitual</option>
+                    </select>
+
+                    <select id="test-tense"></select>
+                </div>
+
+                <button onclick="runSandboxTest()">Generate Form</button>
+            </div>
+            <h2 id="sandbox-result" style="color: #2c3e50; margin-top: 15px;">---</h2>
+        </div>
+
+        <div class="card">
+            <h3>Nouns</h3>
+            <table class="dict-table">
+                <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
+                <tbody>
+                    ${Object.entries(nouns).map(([en, data]) => `
+                        <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Verbs</h3>
+            <table class="dict-table">
+                <thead><tr><th>English</th><th>Stem</th><th>Transitive</th></tr></thead>
+                <tbody>
+                    ${Object.entries(verbs).map(([en, data]) => `
+                        <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Yes" : "No"}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
     `;
-    
+
     app.innerHTML = html;
+    
+    // Ensure all dynamic fields are set correctly on load
+    toggleSandboxFields(); 
+    updateNumberOptions();
+    filterTenses();
 }
 
-// Function to show the popup
+// Function to show the info popup
 window.showInfo = function(id) {
     const lesson = allLessons.find(l => l.id === id);
     
@@ -159,89 +226,343 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     }).join(" ");
 }
 
-// Start the lesson
-let seenWords = new Set(); // Tracks words encountered in the current lesson
-
+// Start a lesson when clicking on one
 function startLesson(id) {
-    activeQuestions = quizData.filter(q => q.lessonId === id);
-    if (activeQuestions.length > 0) {
-        seenWords.clear(); // Clear the list when a new lesson starts
-        currentStep = 0;
+    activeLesson = allLessons.find(l => l.id === id);
+    
+    if (activeLesson) {
+        seenWords.clear();
+        currentModuleIndex = 0;
+        currentSubStep = 0;
         renderLesson();
     } else {
-        alert("This lesson is still under construction!");
+        alert("Lesson not found!");
     }
 }
 
-// Writes the HTML code to render the website
-function renderLesson() {
-    const app = document.getElementById('app');
+// Sublessons within each lesson
+function startSubLesson(lessonId, subIndex) {
+    window.introFinished = false; // Reset for new lesson
+    activeLesson = allLessons.find(l => l.id === lessonId);
+    currentSubLessonIndex = subIndex;
+    activeLesson.currentSubModules = activeLesson.subLessons[subIndex].modules;
+    seenWords.clear();
+    currentModuleIndex = 0;
+    currentSubStep = 0;
+    renderLesson();
+}
 
-    // 1. Safety Guard
-    if (!activeQuestions || activeQuestions.length === 0) {
+// Writes the HTML code to render the lesson
+function renderLesson() {
+    if (!activeLesson) {
         renderHome();
         return;
     }
 
-    const q = activeQuestions[currentStep];
-    isCorrect = false; 
+    const app = document.getElementById('app');
 
-    // 2. Logic for labels and tooltips
+    // 1. INTRO CARD CHECK
+    // Show this ONLY when we haven't started the first module yet
+    if (currentModuleIndex === 0 && currentSubStep === 0 && !window.introFinished) {
+        app.innerHTML = `
+            <div class="nav-container">
+                <button class="dict-btn" onclick="renderHome()">⬅ Back</button>
+                <button class="info-btn" onclick="showInfo(${activeLesson.id})">ⓘ</button>
+            </div>
+            <div class="card intro-card">
+                <h1>Lesson ${activeLesson.id}: ${activeLesson.title}</h1>
+                <p>${activeLesson.description}</p>
+                <div class="vocab-preview">
+                    <h4>New Vocabulary:</h4>
+                    <p>${activeLesson.newWords.join(", ")}</p>
+                </div>
+                <button class="primary-btn" onclick="window.startFirstModule()">Start Lesson ➔</button>
+            </div>
+        `;
+        return;
+    }
+
+    const module = activeLesson.currentSubModules[currentModuleIndex];
+    if (!module) {
+        showEndScreen();
+        return;
+    }
+
+    // 2. MODULE ROUTER
+    // These functions need to be updated to PREPEND the navHtml or use a layout helper
+    switch (module.type) {
+        case "vocab_drill":
+            renderVocabDrill(module);
+            break;
+        case "sorting":
+            renderSortingModule(module);
+            break;
+        case "classification":
+            renderClassificationModule(module);
+            break;
+        case "translation":
+            renderTranslationModule(module);
+            break;
+        default:
+            console.error("Unknown module type:", module.type);
+    }
+    
+    // 3. INJECT NAV AFTER MODULE RENDERS
+    // Since module functions overwrite app.innerHTML, we add the nav back to the top
+    const navDiv = document.createElement('div');
+    navDiv.className = "nav-container";
+    navDiv.innerHTML = `
+        <button class="dict-btn" onclick="renderHome()">⬅ Back</button>
+        <button class="info-btn" onclick="showInfo(${activeLesson.id})">ⓘ</button>
+    `;
+    app.prepend(navDiv);
+}
+
+// Helper to clear the intro and start the lesson
+window.startFirstModule = function() {
+    window.introFinished = true; // Flag to prevent looping back to intro
+    renderLesson();
+};
+
+// --- VOCAB DRILL MODULE ---
+function renderVocabDrill(module) {
+    const app = document.getElementById('app');
+    const q = module.questions[currentSubStep];
+    const wrappedTv = wrapWords(q.tv, true, activeLesson.newWords);
+
+    app.innerHTML = `
+        <h1>${module.title}</h1>
+        <div class="card">
+            <p>Translate this new word:</p>
+            <h2 class="large-tv">${wrappedTv}</h2>
+            <input type="text" id="user-input" autocomplete="off" placeholder="English translation...">
+            <button id="submit-btn">Check</button>
+            <p id="feedback"></p>
+        </div>
+    `;
+
+    document.getElementById('submit-btn').onclick = () => {
+        const input = document.getElementById('user-input').value.trim().toLowerCase();
+        if (input === q.en.toLowerCase()) {
+            showSuccessAndContinue(module); // <--- Use the general function
+        } else {
+            document.getElementById('feedback').innerText = `Not quite! It means "${q.en}"`;
+            document.getElementById('feedback').style.color = "red";
+        }
+    };
+}
+
+// --- NOUN SORTING MODULE ---
+function renderSortingModule(module) {
+    const app = document.getElementById('app');
+    const allWords = [...module.groups.Animate, ...module.groups.Inanimate];
+    const word = allWords[currentSubStep];
+    const wrappedWord = wrapWords(word, true, activeLesson.newWords);
+    
+    app.innerHTML = `
+        <h1>${module.title}</h1>
+        <div class="card">
+            <p>${module.description}</p>
+            <h2 class="large-tv">${wrappedWord}</h2>
+            <div class="sorting-buttons">
+                <button class="primary-btn sort-btn" onclick="checkSort('${word}', 'Animate', this)">Animate</button>
+                <button class="primary-btn sort-btn" onclick="checkSort('${word}', 'Inanimate', this)">Inanimate</button>
+            </div>
+            <p id="feedback"></p>
+        </div>
+    `;
+}
+
+window.checkSort = function(word, choice, clickedButton) {
+    const module = activeLesson.currentSubModules[currentModuleIndex];
+    const feedback = document.getElementById('feedback');
+    
+    if (!module || !module.groups) {
+        console.error("Module or groups not found!");
+        return;
+    }
+
+    const isCorrectChoice = module.groups[choice].includes(word);
+    
+    if (isCorrectChoice) {
+        showSuccessAndContinue(module);
+    } else {
+        feedback.innerText = "In Tvaali logic, that belongs elsewhere!";
+        feedback.style.color = "red";
+        if (clickedButton) {
+            clickedButton.style.backgroundColor = "#ffcccc";
+            setTimeout(() => clickedButton.style.backgroundColor = "", 500);
+        }
+    }
+};
+
+// --- VERB CLASSIFICATION MODULE ---
+function renderClassificationModule(module) {
+    const app = document.getElementById('app');
+    const item = module.words[currentSubStep];
+    const wrappedWord = wrapWords(item.word, true, activeLesson.newWords);
+    
+    app.innerHTML = `
+        <h1>${module.title}</h1>
+        <div class="card">
+            <p>${module.description}</p>
+            <h2 class="large-tv">${wrappedWord}</h2>
+            <p><em>${item.hint || ""}</em></p>
+            <div class="sorting-buttons">
+                <button class="primary-btn" onclick="checkClassify(true, this)">Transitive</button>
+                <button class="primary-btn" onclick="checkClassify(false, this)">Intransitive</button>
+            </div>
+            <p id="feedback"></p>
+        </div>
+    `;
+}
+
+window.checkClassify = (userChoice, clickedButton) => {
+    const module = activeLesson.currentSubModules[currentModuleIndex];
+    const item = module.words[currentSubStep];
+    const feedback = document.getElementById('feedback');
+    
+    if (userChoice === item.type) {
+        showSuccessAndContinue(module);
+    } else {
+        feedback.innerText = "Not quite!";
+        feedback.style.color = "red";
+        if (clickedButton) {
+            clickedButton.style.backgroundColor = "#ffcccc";
+            setTimeout(() => clickedButton.style.backgroundColor = "", 500);
+        }
+    }
+};
+
+// --- TRANSLATION MODULE ---
+function renderTranslationModule(module) {
+    if (module.useGlobalQuestions) {
+        activeQuestions = activeLesson.questions;
+    } else {
+        activeQuestions = module.questions; 
+    }
+    
+    // Safety check
+    if (!activeQuestions || activeQuestions.length === 0) {
+        console.error("No questions found! Check if useGlobalQuestions is set correctly.");
+        document.getElementById('app').innerHTML = `<p style="color:red">Error: No questions found for this module.</p>`;
+        return;
+    }
+
+    const q = activeQuestions[currentSubStep];
+    
     const isTvaaliPrompt = q.type === "tv_to_en";
     const label = isTvaaliPrompt ? "Translate to English:" : "Translate to Tvaali:";
-    
-    // We get the raw text based on the question type
     const rawPromptText = isTvaaliPrompt ? q.tvaali : q.english;
-    
-    // Get the newWords array from the current lesson data
-    const currentLesson = allLessons.find(l => l.id === q.lessonId);
-    const newWordsList = currentLesson ? currentLesson.newWords : [];
+    const wrappedPrompt = wrapWords(rawPromptText, isTvaaliPrompt, activeLesson.newWords);
 
-    // Pass that list into the wrapper
-    const wrappedPrompt = wrapWords(rawPromptText, isTvaaliPrompt, newWordsList);
-
-    // 3. Single Render (Merge all variables here)
-    app.innerHTML = `
-        <h1>Lesson ${q.lessonId}</h1>
+    document.getElementById('app').innerHTML = `
+        <h1>${module.title}</h1>
         <div class="card">
             <p><strong>${label}</strong></p>
             <h2>${wrappedPrompt}</h2>
             <input type="text" id="user-input" autocomplete="off" placeholder="Type here...">
             <button id="submit-btn">Check Answer</button>
             <p id="feedback"></p>
-            <button id="next-btn" style="display:none;">Next Question (Enter) ➔</button>
+            <button id="next-btn" style="display:none;">Next Question ➔</button>
         </div>
     `;
 
-    // 4. Attach Events
     document.getElementById('submit-btn').onclick = checkAnswer;
-    document.getElementById('next-btn').onclick = nextQuestion;
-    document.getElementById('user-input').focus();
+    document.getElementById('next-btn').onclick = () => handleModuleProgress(module);
 }
+
+// Module progress
+function handleModuleProgress(module) {
+    let totalSteps = 0;
+    
+    if (module.useGlobalQuestions) {
+        totalSteps = activeLesson.questions.length;
+    } else if (module.questions) {
+        totalSteps = module.questions.length;
+    } else if (module.groups) {
+        totalSteps = [...module.groups.Animate, ...module.groups.Inanimate].length;
+    } else if (module.words) {
+        totalSteps = module.words.length;
+    }
+    
+    markWordsAsSeen(); // Mark the word we just finished
+    currentSubStep++;  // Move to next question/word
+    isCorrect = false; // Reset for next screen
+
+    if (currentSubStep < totalSteps) {
+        renderLesson(); 
+    } else {
+        currentModuleIndex++;
+        currentSubStep = 0;
+        
+        // Safety check: is there actually another module?
+        if (activeLesson.currentSubModules[currentModuleIndex]) {
+            renderLesson();
+        } else {
+            showEndScreen(); // No more modules in this sub-lesson!
+        }
+    }
+}
+
+// Mark words as seen
+function markWordsAsSeen() {
+    // SAFETY: Ensure an active lesson and current module actually exist
+    if (!activeLesson || !activeLesson.currentSubModules) return;
+    
+    const module = activeLesson.currentSubModules[currentModuleIndex];
+    if (!module) return; // Exit if the module is undefined
+
+    let textToClean = "";
+
+    // Determine which questions to look at
+    const questionList = module.useGlobalQuestions ? activeLesson.questions : module.questions;
+
+    // Check module type and ensure the questionList exists
+    if (module.type === "translation" && questionList) {
+        // Ensure the current index actually exists in the list before reading [0]
+        const q = questionList[currentSubStep];
+        if (q) {
+            textToClean = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
+        }
+    } else if (module.type === "vocab_drill" && module.questions) {
+        const q = module.questions[currentSubStep];
+        if (q) textToClean = q.tv;
+    }
+
+    if (textToClean) {
+        // Use a fallback to empty string if textToClean is somehow undefined/null
+        const words = String(textToClean).split(" ");
+        words.forEach(word => {
+            const clean = word.toLowerCase().replace(/[.,!?;]/g, "");
+            seenWords.add(clean);
+        });
+    }
+}
+
 
 // Check answer function
 function checkAnswer() {
     const userInput = document.getElementById('user-input').value.trim().toLowerCase();
     const feedback = document.getElementById('feedback');
     const nextBtn = document.getElementById('next-btn');
-    const q = activeQuestions[currentStep];
+    
+    // BUG FIX: Use currentSubStep instead of currentStep
+    const q = activeQuestions[currentSubStep]; 
 
     const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
-
     let isInputCorrect = false;
 
     if (Array.isArray(correctAnswer)) {
-        // If it's an array, check if the input matches any item in the list
         isInputCorrect = correctAnswer.some(ans => ans.toLowerCase() === userInput);
     } else {
-        // If it's just a single string
         isInputCorrect = userInput === correctAnswer.toLowerCase();
     }
 
     if (isInputCorrect) {
         feedback.innerText = "Correct!";
         feedback.style.color = "green";
-        isCorrect = true;
+        isCorrect = true; // This triggers the Enter key logic
         nextBtn.style.display = "block";
         document.getElementById('submit-btn').style.display = "none";
     } else {
@@ -251,56 +572,66 @@ function checkAnswer() {
     }
 }
 
-// Next question maker
-function nextQuestion() {
-    // Before moving to next step, mark the words in the current prompt as "seen"
-    const q = activeQuestions[currentStep];
-    const promptText = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
-    
-    promptText.split(" ").forEach(word => {
-        const clean = word.toLowerCase().replace(/[.,!?;]/g, "");
-        seenWords.add(clean);
-    });
+// Correct message 
+function showSuccessAndContinue(module) {
+    const feedback = document.getElementById('feedback');
+    feedback.innerText = "That is correct!";
+    feedback.style.color = "green";
 
-    currentStep++;
-    if (currentStep < activeQuestions.length) {
-        renderLesson();
-    } else {
-        showEndScreen();
+    // Disable all buttons in the card to prevent double-tapping
+    const buttons = document.querySelectorAll('.card button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    // Wait 800ms, then move on
+    setTimeout(() => {
+        handleModuleProgress(module);
+    }, 800);
+}
+
+function markCurrentSubLessonComplete() {
+    // We need to know which sub-lesson index we are on. 
+    // Let's assume we store it in a global called currentSubLessonIndex
+    const key = `${activeLesson.id}-${currentSubLessonIndex}`;
+    if (!completedSubLessons.includes(key)) {
+        completedSubLessons.push(key);
+        localStorage.setItem('tvaali_progress', JSON.stringify(completedSubLessons));
     }
 }
 
 // Endscreen maker
 function showEndScreen() {
-    // Get the ID from the first question of the active set instead
-    const lessonId = activeQuestions[0].lessonId;
+    markCurrentSubLessonComplete(); // Save progress!
 
     document.getElementById('app').innerHTML = `
         <div class="card">
-            <h1>Lesson Complete!</h1>
-            <p>You've mastered lesson ${lessonId}.</p>
-            <button id="home-btn">Take me Home (Enter)</button>
+            <h1>Part Complete!</h1>
+            <p>You've finished this section of Tvaali Basics.</p>
+            <button onclick="renderHome()">Back to Map</button>
         </div>
     `;
-    document.getElementById('home-btn').onclick = () => renderHome();
 }
 
 // Global enter check
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const homeBtn = document.getElementById('home-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
         
-        // 1. If we are on the end screen
         if (homeBtn) {
             homeBtn.click();
         } 
-        // 2. If we answered correctly and the next button is there
-        else if (isCorrect) {
-            nextQuestion();
+        else if (isCorrect && nextBtn && nextBtn.style.display !== "none") {
+            const currentSubModules = activeLesson.currentSubModules;
+            if (currentSubModules && currentSubModules[currentModuleIndex]) {
+                handleModuleProgress(currentSubModules[currentModuleIndex]);
+            } else {
+                // If something is wrong with the index, just go home to reset
+                renderHome();
+            }
         } 
-        // 3. Otherwise, check the answer
-        else {
-            checkAnswer();
+        else if (submitBtn && submitBtn.style.display !== "none") {
+            submitBtn.click();
         }
     }
 });

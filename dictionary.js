@@ -1,9 +1,9 @@
 const nouns={
     // Animate
     woman:  {root:"sidhi", class:"animate" },
-    man:    {root: "ooro", class: "animate"},
+    man:    {root: "oroo", class: "animate"},
     fire:   {root: "aahvuu", class: "animate" },
-    birtd:  {root:"djaavuum",class:"animate"},
+    bird:  {root:"djaavuum",class:"animate"},
     cat:    {root:"rjiimai",class:"animate"},
 
     // Inanimate
@@ -18,11 +18,46 @@ const verbs={
     laugh:  {stem: "aahan", trans: false },
     sleep:  {stem: "iilha", trans: false },
     see:    {stem:"roshuu", trans:true},
+    fall:   {stem:"liin", trans:false},
 };
 
-const V = verbConjugator.conjugate.bind(verbConjugator);
-// const ERG
-const ACC = nounCaser.getAccusative.bind(nounCaser);
+function NR(word) {
+    if (!nouns[word]) {
+        console.error(`Missing noun in dictionary: ${word}`);
+        return "[Unknown]"; 
+    }
+    return nouns[word].root;
+}
+const V = (verbObj, nClass, person, number, tense) => {
+    if (!verbObj || !verbObj.stem) return "[Unknown Verb]";
+    // The verbConjugator should handle the logic for "future perfective" etc.
+    return verbConjugator.conjugate(verbObj, nClass, person, number, tense);
+};
+const ERG = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    // Split Ergative Logic:
+    // If it's Animate, return the custom message instead of the root
+    if (nounObj.class === "animate") {
+        return "This is an animate noun. These don't have an ergative case.";
+    }
+
+    // For Inanimate and Abstract, proceed with the suffix logic
+    if (nounObj.class === "inanimate" || nounObj.class === "abstract") {
+        return nounCaser.getErgative(nounObj, number);
+    }
+    
+    return nounObj.root; 
+};
+const ACC = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    // Rule: Objects of Animates are Accusative; Inanimates are Nominative (Root)
+    if (nounObj.class === "animate") {
+        return nounCaser.getAccusative(nounObj, number);
+    }
+    return nounObj.root; // Inanimates stay in Nominative as objects
+};
 // const DAT
 // const GEN
 // const LOC
@@ -31,4 +66,3 @@ const ACC = nounCaser.getAccusative.bind(nounCaser);
 // const ABL
 // const INS
 // const COM
-const NR = (key) => nouns[key].root || "Word not found";

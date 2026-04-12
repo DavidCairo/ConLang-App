@@ -1,24 +1,62 @@
 const nounCaser = {
+    // Find heavy vowels
+    isHeavy: function(char1, char2) {
+        if (!char1 || !char2) return false;
+        const pair = char1 + char2;
+        // Doubled vowels or diphthongs ai/oi are "Heavy"
+        return (char1 === char2 && "aeiou".includes(char1)) || 
+               (pair === "ai" || pair === "oi");
+    },
+
+    // apply suffix 
+    applySuffix: function(root, suffix) {
+        console.log(`Testing: ${root} + ${suffix}`);
+        const vowels = "aeiou";
+        const heavySingle = "aoi"; // Updated per your requirements
+        
+        const rootEnding = root.slice(-1).toLowerCase();
+        const suffixStart = suffix.charAt(0).toLowerCase();
+        const endingType = this.getEndingType(root);
+
+        // Check if suffix creates a heavy environment
+        const createsHeavyPair = this.isHeavy(rootEnding, suffixStart);
+        const startsWithHeavy = heavySingle.includes(suffixStart);
+
+        if (vowels.includes(rootEnding) && (startsWithHeavy || createsHeavyPair)) {
+            
+            // RULE 1: Long vowels of the stem override suffixes 
+            // We keep the stem's long vowel and trim the SUFFIX's first vowel
+            if (endingType === "longVowel") {
+                // If suffix is "oot", we just want "ot" to append to the long stem
+                const trimmedSuffix = vowels.includes(suffixStart) ? suffix.slice(1) : suffix;
+                return root + trimmedSuffix;
+            }
+
+            // RULE 2: Heavy short vowels of the suffix override short vowels of the stem
+            // We delete the root's short vowel and keep the full suffix
+            return root.slice(0, -1) + suffix;
+        }
+        
+        // Default: just join them
+        return root + suffix;
+    },
+
     // Find word ending
     getEndingType: function(word) {
-        // If 'word' is undefined, null, or an empty string, return a fallback so the .slice() below doesn't crash the app.
-        if (!word || typeof word !== 'string') {
-            console.error("nounCaser Error: getEndingType received an invalid word:", word);
-            return "consonant"; 
-        }
-
-        const vowels = "aeiou"
-        const last = word.slice(-1);
-        const penult = word.slice(-2, -1);
+    if (!word || typeof word !== 'string') return "consonant";
+    
+        const vowels = "aeiou";
+        const last = word.slice(-1).toLowerCase();
+        const penult = word.slice(-2, -1).toLowerCase();
         
-        if (last === penult) return "longVowel";
-        if (vowels.contains(last)) return "vowel";
+        // Check if it's a long vowel using your isHeavy logic
+        if (this.isHeavy(penult, last)) return "longVowel";
+        if (vowels.includes(last)) return "vowel";
         return "consonant";
     },
 
     // The logic block for Accusative
     getAccusative: function(nounObj, number = "singular") {
-        // Safety: check if nounObj exists and has a root
         if (!nounObj || !nounObj.root) {
             console.error("getAccusative received an invalid object:", nounObj);
             return "ERROR"; 
@@ -28,101 +66,86 @@ const nounCaser = {
         const ending = this.getEndingType(root);
         const nClass = nounObj.class;
 
-        // Animate
         if (nClass === "animate") {
-
-            // Singular animate
+            // --- SINGULAR ---
             if (number === "singular") {
-                if (ending === "longVowel") return root + "m"; 
-                if (ending === "vowel") {
-                    const lastVowel = root.slice(-1);
-
-                    if (lastVowel === "a"){
-                        return root + "m";
-                    } else {
-                        return root.slice(0, -1) + "am"
-                    }
-                }    
-                return root + "am";
+                // Specific rule: -m for long vowels or 'a' roots, -am for others
+                if (ending === "longVowel" || root.endsWith("a")) {
+                    return root + "m";
+                }
+                // applySuffix handles the heavy 'a' in 'am' overriding other short vowels
+                return this.applySuffix(root, "am");
             }
 
-            // Dual animate
+            // --- DUAL --- (-mro, -mdo, -nko for consonants; -m for vowels)
             if (number === "dual") {
-                if (ending === "longVowel" || ending === "vowel") return root + "m";
-                if (ending === "consonant") {
-                    const lastConsonant = root.slice(-1); 
-
-                    switch (lastConsonant) {
-                        case "r":
-                            return root.slice(0, -1) + "mro";
-
-                        case "t":
-                            return root.slice(0, -1) + "mdo";
-
-                        case "k":
-                            return root.slice(0, -1) + "nko";
-
-                        default:
-                            return root; 
-                    }
+                if (ending !== "consonant") return root + "m";
+                
+                const lastConsonant = root.slice(-1); 
+                const stem = root.slice(0, -1);
+                switch (lastConsonant) {
+                    case "r": return stem + "mro";
+                    case "t": return stem + "mdo";
+                    case "k": return stem + "nko";
+                    default:  return root; 
                 }
             }
 
-            // Paucal animate
+            // --- PAUCAL --- (-nro, -nto, -nko for consonants; -t for vowels)
             if (number === "paucal") {
-                if (ending === "longVowel" || ending === "vowel") return root + "t";
-                if (ending === "consonant") {
-                    const lastConsonant = root.slice(-1); 
-
-                    switch (lastConsonant) {
-                        case "r":
-                            return root.slice(0, -1) + "nro";
-
-                        case "t":
-                            return root.slice(0, -1) + "nto";
-
-                        case "k":
-                            return root.slice(0, -1) + "nko";
-
-                        default:
-                            return root; 
-                    }
+                if (ending !== "consonant") return root + "t";
+                
+                const lastConsonant = root.slice(-1); 
+                const stem = root.slice(0, -1);
+                switch (lastConsonant) {
+                    case "r": return stem + "nro";
+                    case "t": return stem + "nto";
+                    case "k": return stem + "nko";
+                    default:  return root; 
                 }
             }
 
-            // Plural animate
+            // --- PLURAL --- (-kro, -kto, -ko for consonants; -k for vowels)
             if (number === "plural") {
-                if (ending === "longVowel" || ending === "vowel") return root + "k";
-                if (ending === "consonant") {
-                    const lastConsonant = root.slice(-1); 
-
-                    switch (lastConsonant) {
-                        case "r":
-                            return root.slice(0, -1) + "kro";
-
-                        case "t":
-                            return root.slice(0, -1) + "kto";
-
-                        case "k":
-                            return root;
-
-                        default:
-                            return root + "ko"; 
-                    }
+                if (ending !== "consonant") return root + "k";
+                
+                const lastConsonant = root.slice(-1); 
+                const stem = root.slice(0, -1);
+                switch (lastConsonant) {
+                    case "r": return stem + "kro";
+                    case "t": return stem + "kto";
+                    case "k": return root; // -k on a root ending in -k stays root
+                    default:  return root + "ko"; 
                 }
             }
         }
 
-        // Inanimate
-        if (nClass === "inanimate") {
-            return root; 
-        }
-
-        // Abstract
-        if (nClass === "abstract") {
-            return root;
-        }
-
+        // Inanimate and Abstract return root for Accusative
         return root; 
+    },
+
+    // The logic block for Ergative
+    getErgative: function(nounObj, number = "singular") {
+    if (!nounObj || !nounObj.root) return "ERROR";
+
+    const root = nounObj.root;
+    const nClass = nounObj.class;
+    const ending = this.getEndingType(root);
+
+    // Inanimate Logic
+    if (nClass === "inanimate") {
+        const suffix = (number === "singular") ? "oot" : "oo";
+        return this.applySuffix(root, suffix);
     }
+
+    // Abstract Logic
+    if (nClass === "abstract") {
+        // Since 'ak' starts with a heavy vowel 'a', 
+        // applySuffix will automatically handle the root vowel deletion.
+        if (ending === "longVowel") return root + "k"; // Special rule: keep long + k
+        return this.applySuffix(root, "ak");
+    }
+
+    return root; 
+},
 };
