@@ -112,7 +112,7 @@ const verbConjugator = {
         
         // Split "future perfective" into ["future", "perfective"]
         const parts = fullTense.split(" ");
-        const time = parts[0];
+        const time = parts[0]; 
         const aspect = parts[1] || "perfective"; 
 
         if (time === "present" && (aspect === "perfective" || aspect === "continuous")) {
@@ -123,12 +123,12 @@ const verbConjugator = {
             perfective: { 
                 past: "evi", pluperfect: "echti", perfect: "an", 
                 "future in past": "es", present: "", "future perfect": "e", 
-                "future in future": "i", future: "am", indefinite: "te" 
+                "future in future": "i", future: "am", infinitive: "te" 
             },
             continuous: { 
                 past: "avi", pluperfect: "wachi", perfect: "wan", 
                 "future in past": "wes", "future perfect": "we", 
-                "future in future": "ai", future: "wum", indefinite: "aate" 
+                "future in future": "ai", future: "wum", infinitive: "aate" 
             },
             habitual: { 
                 past: "tsevi", perfect: "tsan", present: "tse" 
@@ -165,17 +165,20 @@ const verbConjugator = {
     },
 
     // 3. THE MASTER BUILDER
-    conjugate: function(verbObj, vClass, person, number, fullTense, formality = "informal") {
+    conjugate: function(verbObj, vClass, person, number, fullTense) {
         const stem = verbObj.stem;
-        
-        // Handle Prefix
-        // Note: You'll need to map your "3rd animate" person string back to the logic
-        const rawPrefix = this.getPronoun(vClass, person, formality, number);
-        let res = this.applyPrefixPhonology(rawPrefix, stem);
+        let res = stem;
 
-        // Handle Suffix
+        // 1. Only apply prefix if person is actually provided
+        if (person) {
+            const rawPrefix = this.getPronoun(vClass, person, "informal", number);
+            res = this.applyPrefixPhonology(rawPrefix, stem);
+        }
+
+        // 2. Get the suffix (this will now look for "infinitive" in your chart)
         const rawSuffix = this.getTense(fullTense);
         
+        // 3. Apply suffix phonology (handles vowel clashes like 'aim' + 'te')
         return this.applySuffixPhonology(res, rawSuffix);
     },
 };

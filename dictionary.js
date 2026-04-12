@@ -5,11 +5,13 @@ const nouns={
     fire:   {root: "aahvuu", class: "animate" },
     bird:  {root:"djaavuum",class:"animate"},
     cat:    {root:"rjiimai",class:"animate"},
+    name:   {root:"naama",class:"animate"},
 
     // Inanimate
     water:  {root: "aaloo", class: "inanimate" },
     stone:  {root:"irni",class:"inanimate"},
     sun:    {root:"nedhaan",class:"inanimate"},
+    grass:  {root:"nimiir",class:"inanimate"},
     // Abstract
 };
 
@@ -28,7 +30,7 @@ function NR(word) {
     }
     return nouns[word].root;
 }
-const V = (verbObj, nClass, person, number, tense) => {
+const V = (verbObj, nClass = null, person = null, number = null, tense = "infinitive perfective") => {
     if (!verbObj || !verbObj.stem) return "[Unknown Verb]";
     // The verbConjugator should handle the logic for "future perfective" etc.
     return verbConjugator.conjugate(verbObj, nClass, person, number, tense);

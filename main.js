@@ -4,7 +4,7 @@ const quizData = [
 ];
 const allLessons = [lesson1Data]
 
-// 
+// Variables
 let activeLesson = null;
 let activeQuestions = [];
 let currentModuleIndex = 0; // Track which module we are in
@@ -13,6 +13,15 @@ let seenWords = new Set();
 let isCorrect = false;
 let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
 let currentSubLessonIndex = 0; // Add this near 'currentModuleIndex'
+
+// Allow for shuffling of arrays
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 // Make homepage
 function renderHome() {
@@ -264,6 +273,32 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     }).join(" ");
 }
 
+// Check if a lesson has been shuffled
+function renderSortingModule(module) {
+    const app = document.getElementById('app');
+    
+    // 1. Create the combined list if it doesn't exist yet
+    if (!module.shuffledList) {
+        module.shuffledList = shuffleArray([...module.groups.Animate, ...module.groups.Inanimate]);
+    }
+
+    const word = module.shuffledList[currentSubStep];
+    const wrappedWord = wrapWords(word, true, activeLesson.newWords);
+    
+    app.innerHTML = `
+        <h1>${module.title}</h1>
+        <div class="card">
+            <p>${module.description}</p>
+            <h2 class="large-tv">${wrappedWord}</h2>
+            <div class="sorting-buttons">
+                <button class="primary-btn sort-btn" onclick="checkSort('${word}', 'Animate', this)">Animate</button>
+                <button class="primary-btn sort-btn" onclick="checkSort('${word}', 'Inanimate', this)">Inanimate</button>
+            </div>
+            <p id="feedback"></p>
+        </div>
+    `;
+}
+
 // Start a lesson when clicking on one
 function startLesson(id) {
     activeLesson = allLessons.find(l => l.id === id);
@@ -280,10 +315,16 @@ function startLesson(id) {
 
 // Sublessons within each lesson
 function startSubLesson(lessonId, subIndex) {
-    window.introFinished = false; // Reset for new lesson
+    window.introFinished = false;
     activeLesson = allLessons.find(l => l.id === lessonId);
     currentSubLessonIndex = subIndex;
     activeLesson.currentSubModules = activeLesson.subLessons[subIndex].modules;
+
+    // NEW: Clear shuffled lists so they re-randomize next time
+    activeLesson.currentSubModules.forEach(mod => {
+        if (mod.shuffledList) delete mod.shuffledList;
+    });
+
     seenWords.clear();
     currentModuleIndex = 0;
     currentSubStep = 0;
@@ -297,11 +338,25 @@ function renderLesson() {
         return;
     }
 
+    // RESET STATE
+    isCorrect = false; 
+
     const app = document.getElementById('app');
 
     // 1. INTRO CARD CHECK
-    // Show this ONLY when we haven't started the first module yet
     if (currentModuleIndex === 0 && currentSubStep === 0 && !window.introFinished) {
+        
+        // Format the vocabulary into a clean list
+        let vocabListHtml = "";
+        for (let i = 0; i < activeLesson.newWords.length; i += 2) {
+            vocabListHtml += `
+                <div class="intro-vocab-item">
+                    <span class="en">${activeLesson.newWords[i]}</span>
+                    <span class="tv">${activeLesson.newWords[i+1]}</span>
+                </div>
+            `;
+        }
+
         app.innerHTML = `
             <div class="nav-container">
                 <button class="dict-btn" onclick="renderHome()">⬅ Back</button>
@@ -309,11 +364,15 @@ function renderLesson() {
             </div>
             <div class="card intro-card">
                 <h1>Lesson ${activeLesson.id}: ${activeLesson.title}</h1>
-                <p>${activeLesson.description}</p>
-                <div class="vocab-preview">
-                    <h4>New Vocabulary:</h4>
-                    <p>${activeLesson.newWords.join(", ")}</p>
+                <p class="intro-description">${activeLesson.description}</p>
+                
+                <div class="vocab-preview-container">
+                    <h4>New Vocabulary</h4>
+                    <div class="intro-vocab-list">
+                        ${vocabListHtml}
+                    </div>
                 </div>
+
                 <button class="primary-btn" onclick="window.startFirstModule()">Start Lesson ➔</button>
             </div>
         `;
@@ -329,7 +388,10 @@ function renderLesson() {
     // 2. MODULE ROUTER
     // These functions need to be updated to PREPEND the navHtml or use a layout helper
     switch (module.type) {
-        case "vocab_drill":
+        case "infoCard":
+            renderInfoCard(module);
+            break;
+        case "vocabDrill":
             renderVocabDrill(module);
             break;
         case "sorting":
@@ -362,9 +424,33 @@ window.startFirstModule = function() {
     renderLesson();
 };
 
+// --- CREATE INFO CARD ---
+function renderInfoCard(module) {
+    const app = document.getElementById('app');
+    
+    // Set this so the global Enter key listener knows to proceed
+    isCorrect = true;
+
+    app.innerHTML = `
+        <div class="card info-module-card">
+            <h2>${module.title}</h2>
+            <div class="info-content">${module.content}</div>
+            ${module.note ? `<div class="flavour-note">${module.note}</div>` : ''}
+            <button id="next-btn" class="primary-btn" onclick="handleModuleProgress(activeLesson.currentSubModules[currentModuleIndex])">Continue ➔</button>
+        </div>
+    `;
+}
+
 // --- VOCAB DRILL MODULE ---
 function renderVocabDrill(module) {
     const app = document.getElementById('app');
+    
+    // Shuffle only on the first step
+    if (currentSubStep === 0 && !module.shuffled) {
+        module.questions = shuffleArray(module.questions);
+        module.shuffled = true;
+    }
+
     const q = module.questions[currentSubStep];
     const wrappedTv = wrapWords(q.tv, true, activeLesson.newWords);
 
@@ -382,7 +468,12 @@ function renderVocabDrill(module) {
     document.getElementById('submit-btn').onclick = () => {
         const input = document.getElementById('user-input').value.trim().toLowerCase();
         if (input === q.en.toLowerCase()) {
-            showSuccessAndContinue(module); // <--- Use the general function
+            isCorrect = true;
+            const btn = document.createElement('button');
+            btn.id = "next-btn";
+            btn.style.display = "none";
+            app.appendChild(btn);
+            showSuccessAndContinue(module);
         } else {
             document.getElementById('feedback').innerText = `Not quite! It means "${q.en}"`;
             document.getElementById('feedback').style.color = "red";
@@ -393,8 +484,13 @@ function renderVocabDrill(module) {
 // --- NOUN SORTING MODULE ---
 function renderSortingModule(module) {
     const app = document.getElementById('app');
-    const allWords = [...module.groups.Animate, ...module.groups.Inanimate];
-    const word = allWords[currentSubStep];
+    
+    if (currentSubStep === 0 && !module.shuffled) {
+        module.allWords = shuffleArray([...module.groups.Animate, ...module.groups.Inanimate]);
+        module.shuffled = true;
+    }
+
+    const word = module.allWords[currentSubStep];
     const wrappedWord = wrapWords(word, true, activeLesson.newWords);
     
     app.innerHTML = `
@@ -437,6 +533,12 @@ window.checkSort = function(word, choice, clickedButton) {
 // --- VERB CLASSIFICATION MODULE ---
 function renderClassificationModule(module) {
     const app = document.getElementById('app');
+
+    if (currentSubStep === 0 && !module.shuffled) {
+        module.words = shuffleArray(module.words);
+        module.shuffled = true;
+    }
+
     const item = module.words[currentSubStep];
     const wrappedWord = wrapWords(item.word, true, activeLesson.newWords);
     
@@ -474,21 +576,13 @@ window.checkClassify = (userChoice, clickedButton) => {
 
 // --- TRANSLATION MODULE ---
 function renderTranslationModule(module) {
-    if (module.useGlobalQuestions) {
-        activeQuestions = activeLesson.questions;
-    } else {
-        activeQuestions = module.questions; 
+    if (currentSubStep === 0 && !module.shuffled) {
+        const source = module.useGlobalQuestions ? activeLesson.questions : module.questions;
+        module.activeQuestions = shuffleArray(source);
+        module.shuffled = true;
     }
     
-    // Safety check
-    if (!activeQuestions || activeQuestions.length === 0) {
-        console.error("No questions found! Check if useGlobalQuestions is set correctly.");
-        document.getElementById('app').innerHTML = `<p style="color:red">Error: No questions found for this module.</p>`;
-        return;
-    }
-
-    const q = activeQuestions[currentSubStep];
-    
+    const q = module.activeQuestions[currentSubStep];
     const isTvaaliPrompt = q.type === "tv_to_en";
     const label = isTvaaliPrompt ? "Translate to English:" : "Translate to Tvaali:";
     const rawPromptText = isTvaaliPrompt ? q.tvaali : q.english;
@@ -506,14 +600,16 @@ function renderTranslationModule(module) {
         </div>
     `;
 
-    document.getElementById('submit-btn').onclick = checkAnswer;
+    document.getElementById('submit-btn').onclick = () => checkAnswer(module.activeQuestions);
     document.getElementById('next-btn').onclick = () => handleModuleProgress(module);
 }
 
 // Module progress
-function handleModuleProgress(module) {
+window.handleModuleProgress = function(module) {
+    // Reset the global Enter key state
+    isCorrect = false;
+
     let totalSteps = 0;
-    
     if (module.useGlobalQuestions) {
         totalSteps = activeLesson.questions.length;
     } else if (module.questions) {
@@ -522,26 +618,21 @@ function handleModuleProgress(module) {
         totalSteps = [...module.groups.Animate, ...module.groups.Inanimate].length;
     } else if (module.words) {
         totalSteps = module.words.length;
+    } else {
+        totalSteps = 1; // Default for infoCards
     }
     
-    markWordsAsSeen(); // Mark the word we just finished
-    currentSubStep++;  // Move to next question/word
-    isCorrect = false; // Reset for next screen
+    markWordsAsSeen(); 
+    currentSubStep++;  
 
     if (currentSubStep < totalSteps) {
         renderLesson(); 
     } else {
         currentModuleIndex++;
         currentSubStep = 0;
-        
-        // Safety check: is there actually another module?
-        if (activeLesson.currentSubModules[currentModuleIndex]) {
-            renderLesson();
-        } else {
-            showEndScreen(); // No more modules in this sub-lesson!
-        }
+        renderLesson();
     }
-}
+};
 
 // Mark words as seen
 function markWordsAsSeen() {
@@ -615,12 +706,20 @@ function showSuccessAndContinue(module) {
     const feedback = document.getElementById('feedback');
     feedback.innerText = "That is correct!";
     feedback.style.color = "green";
+    
+    isCorrect = true; // IMPORTANT: Allow the Enter key to work now
 
-    // Disable all buttons in the card to prevent double-tapping
+    // Ensure a next-btn exists for the global listener to "see"
+    if (!document.getElementById('next-btn')) {
+        const hiddenBtn = document.createElement('button');
+        hiddenBtn.id = "next-btn";
+        hiddenBtn.style.display = "none";
+        document.querySelector('.card').appendChild(hiddenBtn);
+    }
+
     const buttons = document.querySelectorAll('.card button');
     buttons.forEach(btn => btn.disabled = true);
 
-    // Wait 800ms, then move on
     setTimeout(() => {
         handleModuleProgress(module);
     }, 800);
@@ -652,22 +751,15 @@ function showEndScreen() {
 // Global enter check
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        const homeBtn = document.getElementById('home-btn');
         const nextBtn = document.getElementById('next-btn');
         const submitBtn = document.getElementById('submit-btn');
         
-        if (homeBtn) {
-            homeBtn.click();
+        // 1. If we are on a screen where the answer is already correct (or it's an infoCard)
+        if (isCorrect && nextBtn && nextBtn.style.display !== "none") {
+            const currentModule = activeLesson.currentSubModules[currentModuleIndex];
+            handleModuleProgress(currentModule);
         } 
-        else if (isCorrect && nextBtn && nextBtn.style.display !== "none") {
-            const currentSubModules = activeLesson.currentSubModules;
-            if (currentSubModules && currentSubModules[currentModuleIndex]) {
-                handleModuleProgress(currentSubModules[currentModuleIndex]);
-            } else {
-                // If something is wrong with the index, just go home to reset
-                renderHome();
-            }
-        } 
+        // 2. If we are on a question screen and haven't submitted yet
         else if (submitBtn && submitBtn.style.display !== "none") {
             submitBtn.click();
         }
