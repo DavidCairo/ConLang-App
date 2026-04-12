@@ -32,14 +32,12 @@ function renderHome() {
     allLessons.forEach(lesson => {
         const div = document.createElement('div');
         div.className = 'lesson-card';
+        div.style.position = 'relative'; // Allows absolute positioning of the info button
         
         const subLessons = lesson.subLessons || [];
-        
-        // Generate the segmented progress bar
         const progressSegments = subLessons.map((sub, index) => {
             const isDone = completedSubLessons.includes(`${lesson.id}-${index}`);
             const statusClass = isDone ? 'segment-done' : 'segment-pending';
-            
             return `
                 <div class="progress-segment ${statusClass}" 
                      onclick="startSubLesson(${lesson.id}, ${index})"
@@ -50,6 +48,8 @@ function renderHome() {
         }).join('');
 
         div.innerHTML = `
+            <button class="info-btn-home" onclick="showInfo(${lesson.id})" title="Lesson Info">ⓘ</button>
+            
             <h3>Lesson ${lesson.id}: ${lesson.title}</h3>
             <div class="lesson-progress-container">
                 <div class="progress-bar-line">
@@ -152,30 +152,68 @@ function renderDictionary() {
 }
 
 // Function to show the info popup
-window.showInfo = function(id) {
-    const lesson = allLessons.find(l => l.id === id);
-    
-    // Create or find the modal element
-    let modal = document.getElementById('infoModal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'infoModal';
-        modal.className = 'modal';
-        document.body.appendChild(modal);
+window.showInfo = function(lessonId) {
+    const lesson = allLessons.find(l => l.id === lessonId);
+    if (!lesson) return;
+
+    // These must match the IDs in your index.html exactly!
+    const modal = document.getElementById('infoModal');
+    const content = document.getElementById('modalContent'); 
+
+    if (!modal || !content) {
+        console.error("Modal elements not found in the DOM!");
+        return;
     }
-    
-    modal.style.display = 'block';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <h2>About Lesson ${lesson.id}</h2>
-            <p>${lesson.description}</p>
-            <h4>New Vocabulary:</h4>
-            <ul>
-                ${lesson.newWords.map(word => `<li>${word}</li>`).join('')}
-            </ul>
-            <button onclick="document.getElementById('infoModal').style.display='none'">Close</button>
+
+    // Generate the table rows for vocabulary
+    // This assumes your lesson.newWords list is [English, Tvaali, English, Tvaali...]
+    let vocabRows = "";
+    for (let i = 0; i < lesson.newWords.length; i += 2) {
+        const english = lesson.newWords[i];
+        const tvaali = lesson.newWords[i + 1] || "";
+        vocabRows += `
+            <tr>
+                <td><strong>${english}</strong></td>
+                <td class="tvaali-text">${tvaali}</td>
+            </tr>
+        `;
+    }
+
+    content.innerHTML = `
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2>${lesson.title}</h2>
+        <p>${lesson.description}</p>
+        
+        <div class="modal-vocab-section">
+            <h3>New Vocabulary</h3>
+            <table class="dict-table">
+                <thead>
+                    <tr>
+                        <th>English</th>
+                        <th>Tvaali</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${vocabRows}
+                </tbody>
+            </table>
         </div>
     `;
+
+    modal.style.display = "block";
+};
+
+window.closeModal = function() {
+    const modal = document.getElementById('infoModal');
+    if (modal) modal.style.display = "none";
+};
+
+// Also close if they click outside the white box
+window.onclick = function(event) {
+    const modal = document.getElementById('infoModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
 };
 
 // Hover over word to show translation
