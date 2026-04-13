@@ -417,3 +417,57 @@ select {
     color: #2a9d8f;
     font-weight: 500;
 }
+
+/* Container for the English word and its tag */
+.vocab-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Base style for all tags */
+.meta-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+/* Specific Colors */
+.tag-animate {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.tag-inanimate {
+    background-color: #f5f5f5;
+    color: #616161;
+    border: 1px solid #e0e0e0;
+}
+
+.tag-verb {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+/* Layout for the vocab item */
+.intro-vocab-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+
+.intro-vocab-item .tv {
+    font-family: 'Courier New', Courier, monospace; /* Or your Tvaali font */
+    font-weight: bold;
+    color: #2c3e50;
+}

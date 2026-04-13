@@ -163,28 +163,39 @@ window.showInfo = function(lessonId) {
     const lesson = allLessons.find(l => l.id === lessonId);
     if (!lesson) return;
 
-    // These must match the IDs in your index.html exactly!
     const modal = document.getElementById('infoModal');
     const content = document.getElementById('modalContent'); 
 
-    if (!modal || !content) {
-        console.error("Modal elements not found in the DOM!");
-        return;
-    }
+    if (!modal || !content) return;
 
-    // Generate the table rows for vocabulary
-    // This assumes your lesson.newWords list is [English, Tvaali, English, Tvaali...]
     let vocabRows = "";
-    for (let i = 0; i < lesson.newWords.length; i += 2) {
-        const english = lesson.newWords[i];
-        const tvaali = lesson.newWords[i + 1] || "";
-        vocabRows += `
-            <tr>
-                <td><strong>${english}</strong></td>
-                <td class="tvaali-text">${tvaali}</td>
-            </tr>
-        `;
+    // Pull from the lesson's main newWords list
+    lesson.newWords.forEach(tvaaliRoot => {
+    const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
+    const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
+    
+    let english = "Unknown";
+    let meta = "";
+
+    if (nounEntry) {
+        english = nounEntry[0];
+        meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
+    } else if (verbEntry) {
+        english = verbEntry[0];
+        meta = `<span class="meta-tag tag-verb">verb</span>`;
     }
+    
+    vocabRows += `
+        <tr>
+            <td>
+                <div class="vocab-info">
+                    <strong>${english}</strong> ${meta}
+                </div>
+            </td>
+            <td class="tvaali-text">${tvaaliRoot}</td>
+        </tr>
+    `;
+});
 
     content.innerHTML = `
         <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -294,7 +305,8 @@ function renderSortingModule(module) {
     }
 
     const word = module.shuffledList[currentSubStep];
-    const wrappedWord = wrapWords(word, true, activeLesson.newWords);
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
+    const wrappedWord = wrapWords(word, true, relevantNewWords);
     
     app.innerHTML = `
         <h1>${module.title}</h1>
@@ -354,19 +366,41 @@ function renderLesson() {
 
     const app = document.getElementById('app');
 
-    // 1. INTRO CARD CHECK
-    if (currentModuleIndex === 0 && currentSubStep === 0 && !window.introFinished) {
+    // 1. INTRO CARD CHECK: Only show if it's the very first part of the whole lesson
+    if (currentSubLessonIndex === 0 && currentModuleIndex === 0 && currentSubStep === 0 && !window.introFinished) {
         
-        // Format the vocabulary into a clean list
         let vocabListHtml = "";
-        for (let i = 0; i < activeLesson.newWords.length; i += 2) {
+        
+        // Grab the full lesson vocabulary list
+        const displayWords = activeLesson.newWords || [];
+
+        displayWords.forEach(tvaaliRoot => {
+            // Look up English name and type from your dictionary objects
+            const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
+            const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
+            
+            let english = "Unknown";
+            let meta = "";
+            
+            if (nounEntry) {
+                english = nounEntry[0];
+                const animacy = nounEntry[1].class.toLowerCase();
+                meta = `<span class="meta-tag tag-${animacy}">${animacy}</span>`;
+            } else if (verbEntry) {
+                english = verbEntry[0];
+                meta = `<span class="meta-tag">verb</span>`;
+            }
+
             vocabListHtml += `
                 <div class="intro-vocab-item">
-                    <span class="en">${activeLesson.newWords[i]}</span>
-                    <span class="tv">${activeLesson.newWords[i+1]}</span>
+                    <div class="vocab-info">
+                        <span class="en">${english}</span>
+                        ${meta}
+                    </div>
+                    <span class="tv">${tvaaliRoot}</span>
                 </div>
             `;
-        }
+        }); // End of forEach
 
         app.innerHTML = `
             <div class="nav-container">
@@ -378,7 +412,7 @@ function renderLesson() {
                 <p class="intro-description">${activeLesson.description}</p>
                 
                 <div class="vocab-preview-container">
-                    <h4>New Vocabulary</h4>
+                    <h4>Core Vocabulary</h4>
                     <div class="intro-vocab-list">
                         ${vocabListHtml}
                     </div>
@@ -397,7 +431,6 @@ function renderLesson() {
     }
 
     // 2. MODULE ROUTER
-    // These functions need to be updated to PREPEND the navHtml or use a layout helper
     switch (module.type) {
         case "infoCard":
             renderInfoCard(module);
@@ -418,8 +451,7 @@ function renderLesson() {
             console.error("Unknown module type:", module.type);
     }
     
-    // 3. INJECT NAV AFTER MODULE RENDERS
-    // Since module functions overwrite app.innerHTML, we add the nav back to the top
+    // 3. INJECT NAV
     const navDiv = document.createElement('div');
     navDiv.className = "nav-container";
     navDiv.innerHTML = `
@@ -465,11 +497,12 @@ function renderVocabDrill(module) {
     
     const direction = q.type || "tv_to_en";
     const isEnToTv = direction === "en_to_tv";
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
     const promptText = isEnToTv ? q.en : q.tv;
     const expectedAnswer = isEnToTv ? q.tv : q.en;
     
     // Wrap words 
-    const displayPrompt = wrapWords(promptText, !isEnToTv, activeLesson.newWords);
+    const displayPrompt = wrapWords(promptText, !isEnToTv, relevantNewWords);
 
     app.innerHTML = `
         <h1>${module.title}</h1>
@@ -529,13 +562,16 @@ function renderVocabDrill(module) {
 function renderSortingModule(module) {
     const app = document.getElementById('app');
     
-    if (currentSubStep === 0 && !module.shuffled) {
-        module.allWords = shuffleArray([...module.groups.Animate, ...module.groups.Inanimate]);
-        module.shuffled = true;
+    // Standardize to shuffledList to match handleModuleProgress
+    if (!module.shuffledList) {
+        module.shuffledList = shuffleArray([...module.groups.Animate, ...module.groups.Inanimate]);
     }
 
-    const word = module.allWords[currentSubStep];
-    const wrappedWord = wrapWords(word, true, activeLesson.newWords);
+    const word = module.shuffledList[currentSubStep];
+    
+    // Ensure we handle the sublesson newWords logic
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
+    const wrappedWord = wrapWords(word, true, relevantNewWords);
     
     app.innerHTML = `
         <h1>${module.title}</h1>
@@ -584,7 +620,8 @@ function renderClassificationModule(module) {
     }
 
     const item = module.words[currentSubStep];
-    const wrappedWord = wrapWords(item.word, true, activeLesson.newWords);
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
+    const wrappedWord = wrapWords(item.word, true, relevantNewWords);
     
     app.innerHTML = `
         <h1>${module.title}</h1>
@@ -631,7 +668,8 @@ function renderTranslationModule(module) {
     const isTvaaliPrompt = q.type === "tv_to_en";
     const label = isTvaaliPrompt ? "Translate to English:" : "Translate to Tvaali:";
     const rawPromptText = isTvaaliPrompt ? q.tvaali : q.english;
-    const wrappedPrompt = wrapWords(rawPromptText, isTvaaliPrompt, activeLesson.newWords);
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
+    const wrappedPrompt = wrapWords(rawPromptText, isTvaaliPrompt, relevantNewWords);
 
     document.getElementById('app').innerHTML = `
         <h1>${module.title}</h1>
@@ -651,18 +689,19 @@ function renderTranslationModule(module) {
 
 // Module progress
 window.handleModuleProgress = function(module) {
-    // Reset the global Enter key state
     isCorrect = false;
 
     let totalSteps = 0;
     if (module.questions) {
         totalSteps = module.questions.length;
+    } else if (module.shuffledList) { // Match the property used in sorting
+        totalSteps = module.shuffledList.length;
     } else if (module.groups) {
         totalSteps = [...module.groups.Animate, ...module.groups.Inanimate].length;
     } else if (module.words) {
         totalSteps = module.words.length;
     } else {
-        totalSteps = 1; // Default for infoCards
+        totalSteps = 1; 
     }
     
     markWordsAsSeen(); 
@@ -679,31 +718,32 @@ window.handleModuleProgress = function(module) {
 
 // Mark words as seen
 function markWordsAsSeen() {
-    // SAFETY: Ensure an active lesson and current module actually exist
     if (!activeLesson || !activeLesson.currentSubModules) return;
     
     const module = activeLesson.currentSubModules[currentModuleIndex];
-    if (!module) return; // Exit if the module is undefined
+    if (!module) return;
 
     let textToClean = "";
 
-    // Determine which questions to look at
-    const questionList = module.useGlobalQuestions ? activeLesson.questions : module.questions;
-
-    // Check module type and ensure the questionList exists
-    if (module.type === "translation" && questionList) {
-        // Ensure the current index actually exists in the list before reading [0]
-        const q = questionList[currentSubStep];
-        if (q) {
-            textToClean = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
+    // If it's a sorting module, we mark the specific word currently being shown
+    if (module.type === "sorting" && module.shuffledList) {
+        textToClean = module.shuffledList[currentSubStep];
+    } 
+    // Otherwise, use your existing translation/drill logic
+    else {
+        const questionList = module.useGlobalQuestions ? activeLesson.questions : module.questions;
+        if (module.type === "translation" && questionList) {
+            const q = questionList[currentSubStep];
+            if (q) {
+                textToClean = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
+            }
+        } else if (module.type === "vocab_drill" && module.questions) {
+            const q = module.questions[currentSubStep];
+            if (q) textToClean = q.tv;
         }
-    } else if (module.type === "vocab_drill" && module.questions) {
-        const q = module.questions[currentSubStep];
-        if (q) textToClean = q.tv;
     }
 
     if (textToClean) {
-        // Use a fallback to empty string if textToClean is somehow undefined/null
         const words = String(textToClean).split(" ");
         words.forEach(word => {
             const clean = word.toLowerCase().replace(/[.,!?;]/g, "");

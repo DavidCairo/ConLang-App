@@ -11,7 +11,7 @@ const lesson1Data = {
     id: 1,
     title: "The basics",
     description: "In this first chapter of lessons, we learn about nouns and verbs, the Subject-Object-Verb structure, noun classes, and the start of the Ergative-Accusative system.",
-    newWords: ["woman", "sidhi", "water", "aaloo", "love", "aim", "sleep", "iilha", "see", "roshuu", "sun", "nedhaan", "bird", "djaavuum", "cat", "rjiimai", "man", "oroo", "fire", "aahvuu", "stone", "inri", "grass", "nimiir", "name", "naama"],
+    newWords: ["sidhi", "aaloo", "aim", "iilha", "roshuu", "nedhaan", "djaavuum", "rjiimai", "oroo", "aahvuu", "irni", "nimiir", "naama", "tarkaa", "araantho", "tsiipli"],
     
     subLessons: [
         {title: "Nouns and Animacy", modules: [
@@ -25,6 +25,7 @@ const lesson1Data = {
                 type: "vocabDrill",
                 title: "First Nouns",
                 description: "Translate these basic words.",
+                newWords: ["sidhi","aaloo","djaavuum"],
                 questions: [
                     { tv: ROOT("woman"), en: "woman" },
                     { tv: ROOT("water"), en: "water" },
@@ -46,11 +47,9 @@ const lesson1Data = {
                 type: "vocabDrill",
                 title: "More Nouns",
                 description: "Translate these basic words.",
+                newWords: ["aahvuu","nimiir","naama"],
                 questions: [
                     { tv: ROOT("fire"), en: "fire" },
-                    // { tv: V(verbs.love), en: "to love" },
-                    // { tv: V(verbs.sleep), en: "to sleep" },
-                    // { tv: V(verbs.see), en: "to see" },
                     { tv: ROOT("grass"), en: "grass"},
                     {tv: ROOT("name"), en: "name"},
                 ]
@@ -80,6 +79,7 @@ const lesson1Data = {
                 type: "vocabDrill",
                 title: "Even More Nouns",
                 description: "Translate these basic words.",
+                newWords: ["nedhaan", "oroo", "rjiimai"],
                 questions: [
                     { tv: ROOT("man"), en: "man" },
                     { tv: ROOT("sun"), en: "sun" },
@@ -177,6 +177,7 @@ const lesson1Data = {
                 type: "vocabDrill",
                 title: "First Verbs",
                 description: "Translate these 3rd person verbs.",
+                newWords: ["aim", "iilha", "roshuu"],
                 questions: [
                     {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: ["he loves", "she loves"]},
                     {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: ["he sleeps", "she sleeps"]},
@@ -261,20 +262,20 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
-                        english: "the woman sleeps"
+                        tvaali: NOM(nouns.woman) + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        english: ["the woman sleeps", "the woman is sleeping"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM("woman") + " " + ACC(nouns.water) + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"),
-                        english: "the woman loves water"
+                        tvaali: NOM(nouns.woman) + " " + ACC(nouns.water) + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        english: ["the woman loves water", "the woman loves the water"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM("man") + " " + ACC(nouns.grass) + " " + V(verbs.see, nouns.man.class, "3rd", "singular", "perfective present"),
-                        english: "the man sees grass"
+                        tvaali: NOM(nouns.man) + " " + ACC(nouns.grass) + " " + V(verbs.see, nouns.man.class, "3rd", "singular", "perfective present"),
+                        english: ["the man sees grass", "the man sees the grass"]
                     },
                     {
                         lessonId: 1,
@@ -305,19 +306,19 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: NOM("man") + " " + V(verbs.sleep, nouns.man.class, "3rd", "singular", "perfective present"),
+                        tvaali: NOM(nouns.man) + " " + V(verbs.sleep, nouns.man.class, "3rd", "singular", "perfective present"),
                         english: "the man sleeps"
                     },
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: NOM("bird") + " " + ACC(nouns.grass) + " " + V(verbs.love, nouns.bird.class, "3rd", "singular", "perfective present"),
+                        tvaali: NOM(nouns.bird) + " " + ACC(nouns.grass) + " " + V(verbs.love, nouns.bird.class, "3rd", "singular", "perfective present"),
                         english: "the bird loves grass"
                     },
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: NOM("man") + " " + ACC(nouns.bird) + " " + V(verbs.see, nouns.cat.class, "3rd", "singular", "perfective present"),
+                        tvaali: NOM(nouns.cat) + " " + ACC(nouns.bird) + " " + V(verbs.see, nouns.cat.class, "3rd", "singular", "perfective present"),
                         english: "the cat sees the bird"
                     },
                     {
@@ -348,12 +349,25 @@ const lesson1Data = {
                 type: "translation",
                 title: "Step 4: Full Sentences",
                 description: "Translate the following sentences.",
+                newWords: ["irni", "liin"],
                 questions: [
                     {
                         lessonId: 1,
                         type: "tv_to_en",
                         tvaali: NOM(nouns.stone, "plural") + " " + V(verbs.fall, nouns.stone.class, "3rd", "plural", "perfective present"),
                         english: "the stone falls"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NOM(nouns.sun, "plural") + " " + V(verbs.laugh, nouns.sun.class, "3rd", "plural", "perfective present"),
+                        english: "the sun laughs"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NOM(nouns.grass, "plural") + " " + V(verbs.sleep, nouns.grass.class, "3rd", "plural", "perfective present"),
+                        english: "the grass sleeps"
                     },
                 ]
             },
@@ -374,6 +388,7 @@ const lesson1Data = {
                 type: "translation",
                 title: "The Ergative Case",
                 description: "Translate the following Tvaali sentences.",
+                newWords: ["tarkaa", "araantho", "tsiipli"],
                 questions: [
                     {
                         lessonId: 1,

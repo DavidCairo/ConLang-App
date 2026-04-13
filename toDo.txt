@@ -1,4 +1,14 @@
-progress bars
+start of lesson info card fix
+declension table
+verb declension and total structure map
 more complete lesson structure
+progress bars
+
 script learner based on arabic
+
+
+
+
+
+
 multiple language compatible
