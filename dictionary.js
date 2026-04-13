@@ -30,7 +30,7 @@ function NR(word) {
     }
     return nouns[word].root;
 }
-const V = (verbObj, nClass = null, person = null, number = null, tense = "infinitive perfective") => {
+const V = (verbObj, nClass = "animate", person = null, number = "singular", tense = "infinitive perfective") => {
     if (!verbObj || !verbObj.stem) return "[Unknown Verb]";
     // The verbConjugator should handle the logic for "future perfective" etc.
     return verbConjugator.conjugate(verbObj, nClass, person, number, tense);
