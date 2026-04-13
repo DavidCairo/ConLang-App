@@ -445,21 +445,28 @@ function renderInfoCard(module) {
 function renderVocabDrill(module) {
     const app = document.getElementById('app');
     
-    // Shuffle only on the first step
     if (currentSubStep === 0 && !module.shuffled) {
         module.questions = shuffleArray(module.questions);
         module.shuffled = true;
     }
 
     const q = module.questions[currentSubStep];
-    const wrappedTv = wrapWords(q.tv, true, activeLesson.newWords);
+    
+    const direction = q.type || "tv_to_en";
+    const isEnToTv = direction === "en_to_tv";
+    const promptText = isEnToTv ? q.en : q.tv;
+    const expectedAnswer = isEnToTv ? q.tv : q.en;
+    
+    // Wrap words (only if the prompt is Tvaali)
+    const displayPrompt = isEnToTv ? promptText : wrapWords(promptText, true, activeLesson.newWords);
 
     app.innerHTML = `
         <h1>${module.title}</h1>
         <div class="card">
-            <p>Translate this new word:</p>
-            <h2 class="large-tv">${wrappedTv}</h2>
-            <input type="text" id="user-input" autocomplete="off" placeholder="English translation...">
+            <p>${isEnToTv ? "Translate to Tvaali:" : "Translate to English:"}</p>
+            <h2 class="large-tv">${displayPrompt}</h2>
+            <input type="text" id="user-input" autocomplete="off" 
+                   placeholder="${isEnToTv ? "Type in Tvaali..." : "Type in English..."}">
             <button id="submit-btn">Check</button>
             <p id="feedback"></p>
         </div>
@@ -467,15 +474,21 @@ function renderVocabDrill(module) {
 
     document.getElementById('submit-btn').onclick = () => {
         const input = document.getElementById('user-input').value.trim().toLowerCase();
-        if (input === q.en.toLowerCase()) {
+        
+        if (input === expectedAnswer.toLowerCase()) {
             isCorrect = true;
-            const btn = document.createElement('button');
-            btn.id = "next-btn";
-            btn.style.display = "none";
-            app.appendChild(btn);
+            // Hidden button for global Enter listener
+            if(!document.getElementById('next-btn')){
+                const btn = document.createElement('button');
+                btn.id = "next-btn";
+                btn.style.display = "none";
+                app.appendChild(btn);
+            }
             showSuccessAndContinue(module);
         } else {
-            document.getElementById('feedback').innerText = `Not quite! It means "${q.en}"`;
+            document.getElementById('feedback').innerText = 
+                isEnToTv ? `Not quite! The Tvaali word is "${expectedAnswer}"` 
+                         : `Not quite! It means "${expectedAnswer}"`;
             document.getElementById('feedback').style.color = "red";
         }
     };

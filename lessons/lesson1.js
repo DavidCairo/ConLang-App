@@ -1,3 +1,12 @@
+// --- LESSON 1 ---
+// Submodule structure
+// 1.1 First words and Animacy
+// 1.2 ACC case
+// 1.3 Verbs and Pronoun marker
+// 1.4 First sentences
+// 1.5 ERG case
+// Mix sentences
+
 const lesson1Data = {
     id: 1,
     title: "The basics",
@@ -14,7 +23,7 @@ const lesson1Data = {
             },
             {
                 type: "vocabDrill",
-                title: "Step 1: The Nouns",
+                title: "First Nouns",
                 description: "Translate these basic words.",
                 questions: [
                     { tv: NR("woman"), en: "woman" },
@@ -43,7 +52,7 @@ const lesson1Data = {
             },
             {
                 type: "vocabDrill",
-                title: "Step 1: The Nouns",
+                title: "More Nouns",
                 description: "Translate these basic words.",
                 questions: [
                     // { tv: NR("woman"), en: "woman" },
@@ -69,14 +78,60 @@ const lesson1Data = {
             },
             {
                 type: "sorting",
-                title: "Step 2: Classifying Nouns",
+                title: "Classifying Nouns",
                 description: "Is it Animate or Inanimate?",
                 groups: {
                     Animate: [NR("woman"),NR("fire"), NR("bird"),NR("name")],
                     Inanimate: [NR("grass"), NR("water")],
                 }
             },
+            {
+                type: "infoCard",
+                title: "More nouns!",
+                content: `
+                    <p>Now that the first nouns are in, let's learn some more!</p>`,
+            },
+            {
+                type: "vocabDrill",
+                title: "Even More Nouns",
+                description: "Translate these basic words.",
+                questions: [
+                    // { tv: NR("woman"), en: "woman" },
+                    { tv: NR("man"), en: "man" },
+                    // { tv: NR("fire"), en: "fire" },
+                    // { tv: NR("water"), en: "water" },
+                    { tv: NR("sun"), en: "sun" },
+                    // { tv: NR("bird"), en: "bird" },
+                    { tv: NR("cat"), en: "cat" },
+                    // { tv: V(verbs.love), en: "to love" },
+                    // { tv: V(verbs.sleep), en: "to sleep" },
+                    // { tv: V(verbs.see), en: "to see" },
+                ]
+            },
+            {
+                type: "infoCard",
+                title: "The other way!",
+                content: `
+                    <p>Since we will be learning Tvaali from english, we will also need to translate words the other direction. Let's do that with the 9 basic words we have seen so far!</p>`,
+            },
+            {
+                type: "vocabDrill",
+                title: "The Other Way",
+                description: "Translate these words into Tvaali",
+                questions: [
+                    {en: "man", tv: NR("man"), type: "en_to_tv"},
+                    { tv: NR("sun"), en: "sun", type: "en_to_tv" },
+                    { tv: NR("cat"), en: "cat", type: "en_to_tv" },
+                    { tv: NR("grass"), en: "grass", type: "en_to_tv"},
+                    {tv: NR("name"), en: "name", type: "en_to_tv"},
+                    { tv: NR("fire"), en: "fire", type: "en_to_tv" },
+                    { tv: NR("bird"), en: "bird", type: "en_to_tv" },
+                    { tv: NR("water"), en: "water", type: "en_to_tv" },
+                    { tv: NR("woman"), en: "woman", type: "en_to_tv" },
+                ]
+            },
         ]},
+        // --- Sublesson 2 ---
         {title: "Intransative Verbs", modules: [
             {
                 type: "infoCard",
