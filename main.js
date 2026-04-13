@@ -233,7 +233,7 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     
     return words.map(word => {
         const cleanWord = word.toLowerCase().replace(/[.,!?;]/g, "");
-        const particles = ["the", "a", "an", "is", "are"];
+        const particles = ["the", "a", "an", "is", "are", "he/she", "it", "they", "we", "you", "i"];
         if (particles.includes(cleanWord)) return word;
 
         let info = "";
@@ -245,10 +245,23 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
             if (nounMatch) info = `En: ${nounMatch[0]} | Class: ${nounMatch[1].class}`;
             else if (verbMatch) info = `En: ${verbMatch[0]} | Verb Stem`;
         } else {
-            const nounKey = Object.keys(nouns).find(key => cleanWord === key || cleanWord.startsWith(key));
-            const verbKey = Object.keys(verbs).find(key => cleanWord === key || cleanWord.startsWith(key) || key.startsWith(cleanWord));
-            if (nounKey) info = `Tv: ${nouns[nounKey].root} | Class: ${nouns[nounKey].class}`;
-            else if (verbKey) info = `Tv: ${verbs[verbKey].stem}`;
+            // 1. Check Nouns: Does the word contain the noun key?
+            const nounKey = Object.keys(nouns).find(key => {
+                const k = key.toLowerCase();
+                return cleanWord === k || cleanWord.startsWith(k) || (cleanWord.endsWith('s') && cleanWord.slice(0, -1) === k);
+            });
+
+            // 2. Check Verbs: Does the word contain the verb key (e.g., "sees" contains "see")?
+            const verbKey = Object.keys(verbs).find(key => 
+                cleanWord === key.toLowerCase() || 
+                cleanWord.includes(key.toLowerCase()) // This catches "sees", "seeing", "saw" (if root is in there)
+            );
+
+            if (nounKey) {
+                info = `Tv: ${nouns[nounKey].root} | Class: ${nouns[nounKey].class}`;
+            } else if (verbKey) {
+                info = `Tv: ${verbs[verbKey].stem}`;
+            }
         }
 
         // 2. HIGHLIGHT LOGIC (Now with Fuzzy Matching)
@@ -457,8 +470,8 @@ function renderVocabDrill(module) {
     const promptText = isEnToTv ? q.en : q.tv;
     const expectedAnswer = isEnToTv ? q.tv : q.en;
     
-    // Wrap words (only if the prompt is Tvaali)
-    const displayPrompt = isEnToTv ? promptText : wrapWords(promptText, true, activeLesson.newWords);
+    // Wrap words 
+    const displayPrompt = wrapWords(promptText, !isEnToTv, activeLesson.newWords);
 
     app.innerHTML = `
         <h1>${module.title}</h1>
@@ -592,6 +605,7 @@ function renderTranslationModule(module) {
     if (currentSubStep === 0 && !module.shuffled) {
         const source = module.useGlobalQuestions ? activeLesson.questions : module.questions;
         module.activeQuestions = shuffleArray(source);
+        activeQuestions = module.activeQuestions;
         module.shuffled = true;
     }
     
@@ -684,17 +698,25 @@ function markWordsAsSeen() {
 
 
 // Check answer function
-function checkAnswer() {
+function checkAnswer(questionsToUse) {
     const userInput = document.getElementById('user-input').value.trim().toLowerCase();
     const feedback = document.getElementById('feedback');
     const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
     
-    // BUG FIX: Use currentSubStep instead of currentStep
-    const q = activeQuestions[currentSubStep]; 
+    // Use the passed-in shuffled list, or fall back to the global activeQuestions
+    const source = questionsToUse || activeQuestions;
+    const q = source[currentSubStep]; 
+
+    if (!q) {
+        console.error("No question found at step", currentSubStep);
+        return;
+    }
 
     const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
     let isInputCorrect = false;
 
+    // Handle array of possible answers or single string
     if (Array.isArray(correctAnswer)) {
         isInputCorrect = correctAnswer.some(ans => ans.toLowerCase() === userInput);
     } else {
@@ -704,9 +726,9 @@ function checkAnswer() {
     if (isInputCorrect) {
         feedback.innerText = "Correct!";
         feedback.style.color = "green";
-        isCorrect = true; // This triggers the Enter key logic
-        nextBtn.style.display = "block";
-        document.getElementById('submit-btn').style.display = "none";
+        isCorrect = true; 
+        if (nextBtn) nextBtn.style.display = "block";
+        if (submitBtn) submitBtn.style.display = "none";
     } else {
         const displayAnswer = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
         feedback.innerText = `Incorrect. A correct answer would be: ${displayAnswer}`;

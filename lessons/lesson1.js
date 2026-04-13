@@ -220,12 +220,64 @@ const lesson1Data = {
                 title: "Stative vs Active",
                 description: "Decide if the verb is Transitive or Intransitive.",
                 words: [
-                    { word: verbs.laugh.stem, type: false},
+                    { word: verbs.see.stem, type: true},
                     { word: verbs.love.stem, type: true},
                     { word: verbs.sleep.stem, type: false}
                 ]
             },
+            {
+                type: "infoCard",
+                title: "The Test",
+                content:`
+                <p> Let's see if these concepts and verbs can be translated both directions! </p>
+                `
+            },
+            {
+                type: "vocabDrill",
+                title: "First Verbs",
+                description: "Translate these verbs.",
+                questions: [
+                    {tv: V(verbs.love, "animate", "1st", "singular", "perfective present"), en: "I love", type: "en_to_tv"},
+                    {tv: V(verbs.sleep, "animate", "1st", "singular", "perfective present"), en: "I sleep", type: "en_to_tv"},
+                    {tv: V(verbs.see, "animate", "1st", "singular", "perfective present"), en: "I see", type: "en_to_tv"},
+                    {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: "He/She loves", type: "en_to_tv"},
+                    {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: "He/She sleeps", type: "en_to_tv"},
+                    {tv: V(verbs.see, "animate", "3rd", "singular", "perfective present"), en: "He/She sees", type: "en_to_tv"},
+                ]
+            },
         ]},
+        // --- Sublesson 4 ---
+        {title: "First Sentences", modules: [
+            {
+                type: "infoCard",
+                title: "The First Sentences",
+                content:`
+                <p> We can now start with making the first sentences!</p>
+                <p> We have seen how animate nouns function as the subject of a sentence, how all nouns function as the object of a transative verb, and how verbs are modified for the subject of the sentence.</p>
+                <p> Here we will put those things together. Note that in Tvaali the order of words is "subject oject verb". So "I apple eat" would be the normal order in Tvaali. </p>
+                <p> Let's get started.</p>
+                `
+            },
+            {
+                type: "translation",
+                title: "Step 4: Full Sentences",
+                description: "Translate the following sentences.",
+                questions: [
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        english: "the woman sleeps"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present"),
+                        english: "the woman loves water"
+                    },
+                ]
+            },
+        ]}
     ],
 
     // Sentences
