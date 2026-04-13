@@ -12,6 +12,8 @@ const nouns={
     stone:  {root:"irni",class:"inanimate"},
     sun:    {root:"nedhaan",class:"inanimate"},
     grass:  {root:"nimiir",class:"inanimate"},
+    earth:  {root:"araantho",class:"inanimate"},
+    snow:  {root:"tsiipli",class:"inanimate"},
     // Abstract
 };
 
@@ -21,19 +23,37 @@ const verbs={
     sleep:  {stem: "iilha", trans: false },
     see:    {stem:"roshuu", trans:true},
     fall:   {stem:"liin", trans:false},
+    hit:   {stem:"tarkaa", trans:true},
 };
 
-function NR(word) {
-    if (!nouns[word]) {
-        console.error(`Missing noun in dictionary: ${word}`);
-        return "[Unknown]"; 
+function ROOT(item) {
+    // 1. Handle Case: input is a string (e.g., ROOT("woman"))
+    if (typeof item === 'string') {
+        if (!nouns[item]) {
+            console.error(`Missing noun in dictionary: ${item}`);
+            return "[Unknown]";
+        }
+        return nouns[item].root;
     }
-    return nouns[word].root;
+
+    // 2. Handle Case: input is an object (e.g., ROOT(nouns.woman))
+    if (item && item.root) {
+        return item.root;
+    }
+
+    // 3. Fallback for invalid input
+    console.error("ROOT received an invalid object or missing key:", item);
+    return "[Unknown]";
 }
 const V = (verbObj, nClass = "animate", person = null, number = "singular", tense = "infinitive perfective") => {
     if (!verbObj || !verbObj.stem) return "[Unknown Verb]";
     // The verbConjugator should handle the logic for "future perfective" etc.
     return verbConjugator.conjugate(verbObj, nClass, person, number, tense);
+};
+const NOM = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    return nounCaser.getNominative(nounObj, number);
 };
 const ERG = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";

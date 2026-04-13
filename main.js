@@ -1,7 +1,4 @@
 // Current possible quizes 
-const quizData = [
-    ...lesson1Data.questions
-];
 const allLessons = [lesson1Data]
 
 // Variables
@@ -84,7 +81,7 @@ function renderDictionary() {
         <div class="card sandbox-card">
             <h3>Grammar Tester</h3>
             <div class="sandbox-controls">
-                <select id="test-type" onchange="toggleSandboxFields()">
+                <select id="test-type" onchange="toggleSandboxFields(); updateNumberOptions();">
                     <option value="noun">Noun Caser</option>
                     <option value="verb">Verb Conjugator</option>
                 </select>
@@ -92,7 +89,8 @@ function renderDictionary() {
                 <input type="text" id="test-input" oninput="updateNumberOptions()" placeholder="Type a noun (e.g., woman, stone)">
                 
                 <div id="noun-fields">
-                    <select id="test-case">
+                    <select id="test-case" onchange="updateNumberOptions()">
+                        <option value="ROOT">Root</option>
                         <option value="NOM">Nominative</option>
                         <option value="ACC">Accusative</option>
                         <option value="ERG">Ergative</option>
@@ -233,7 +231,7 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     
     return words.map(word => {
         const cleanWord = word.toLowerCase().replace(/[.,!?;]/g, "");
-        const particles = ["the", "a", "an", "is", "are", "he/she", "it", "they", "we", "you", "i"];
+        const particles = ["the", "a", "an", "is", "are", "he", "she", "it", "they", "we", "you", "i"];
         if (particles.includes(cleanWord)) return word;
 
         let info = "";
@@ -486,25 +484,45 @@ function renderVocabDrill(module) {
     `;
 
     document.getElementById('submit-btn').onclick = () => {
-        const input = document.getElementById('user-input').value.trim().toLowerCase();
+    const input = document.getElementById('user-input').value.trim().toLowerCase();
+    const answers = Array.isArray(expectedAnswer) ? expectedAnswer : [expectedAnswer];
+    const answersLower = answers.map(a => a.toLowerCase());
+
+    if (answersLower.includes(input)) {
+        isCorrect = true;
         
-        if (input === expectedAnswer.toLowerCase()) {
-            isCorrect = true;
-            // Hidden button for global Enter listener
-            if(!document.getElementById('next-btn')){
-                const btn = document.createElement('button');
-                btn.id = "next-btn";
-                btn.style.display = "none";
-                app.appendChild(btn);
-            }
-            showSuccessAndContinue(module);
-        } else {
-            document.getElementById('feedback').innerText = 
-                isEnToTv ? `Not quite! The Tvaali word is "${expectedAnswer}"` 
-                         : `Not quite! It means "${expectedAnswer}"`;
-            document.getElementById('feedback').style.color = "red";
+        // Find other solutions the user didn't type
+        const others = answers.filter(a => a.toLowerCase() !== input);
+        let feedbackText = "That is correct!";
+        if (others.length > 0) {
+            feedbackText += ` (Another correct solution: "${others.join(", ")}")`;
         }
-    };
+
+        const feedback = document.getElementById('feedback');
+        feedback.innerText = feedbackText;
+        feedback.style.color = "green";
+
+        // Create hidden next-btn for global Enter key
+        if(!document.getElementById('next-btn')){
+            const btn = document.createElement('button');
+            btn.id = "next-btn";
+            btn.style.display = "none";
+            app.appendChild(btn);
+        }
+        
+        // Use a slightly longer timeout if showing extra info so they can read it
+        setTimeout(() => {
+            handleModuleProgress(module);
+        }, others.length > 0 ? 1500 : 800);
+
+    } else {
+        const primaryAns = Array.isArray(expectedAnswer) ? expectedAnswer[0] : expectedAnswer;
+        document.getElementById('feedback').innerText = 
+            isEnToTv ? `Not quite! The Tvaali word is "${primaryAns}"` 
+                     : `Not quite! It means "${primaryAns}"`;
+        document.getElementById('feedback').style.color = "red";
+    }
+};
 }
 
 // --- NOUN SORTING MODULE ---
@@ -603,7 +621,7 @@ window.checkClassify = (userChoice, clickedButton) => {
 // --- TRANSLATION MODULE ---
 function renderTranslationModule(module) {
     if (currentSubStep === 0 && !module.shuffled) {
-        const source = module.useGlobalQuestions ? activeLesson.questions : module.questions;
+        const source = (module.useGlobalQuestions ? activeLesson.questions : module.questions) || [];
         module.activeQuestions = shuffleArray(source);
         activeQuestions = module.activeQuestions;
         module.shuffled = true;
@@ -637,9 +655,7 @@ window.handleModuleProgress = function(module) {
     isCorrect = false;
 
     let totalSteps = 0;
-    if (module.useGlobalQuestions) {
-        totalSteps = activeLesson.questions.length;
-    } else if (module.questions) {
+    if (module.questions) {
         totalSteps = module.questions.length;
     } else if (module.groups) {
         totalSteps = [...module.groups.Animate, ...module.groups.Inanimate].length;
@@ -704,7 +720,7 @@ function checkAnswer(questionsToUse) {
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
     
-    // Use the passed-in shuffled list, or fall back to the global activeQuestions
+    // Safety check: Use passed-in list or global fallback
     const source = questionsToUse || activeQuestions;
     const q = source[currentSubStep]; 
 
@@ -714,23 +730,31 @@ function checkAnswer(questionsToUse) {
     }
 
     const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
-    let isInputCorrect = false;
+    
+    // Convert everything to an array for easy checking
+    const answers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
+    const answersLower = answers.map(a => a.toLowerCase());
 
-    // Handle array of possible answers or single string
-    if (Array.isArray(correctAnswer)) {
-        isInputCorrect = correctAnswer.some(ans => ans.toLowerCase() === userInput);
-    } else {
-        isInputCorrect = userInput === correctAnswer.toLowerCase();
-    }
-
-    if (isInputCorrect) {
-        feedback.innerText = "Correct!";
-        feedback.style.color = "green";
+    if (answersLower.includes(userInput)) {
+        // SUCCESS LOGIC
         isCorrect = true; 
+        
+        // Find other correct answers the user didn't type
+        const others = answers.filter(a => a.toLowerCase() !== userInput);
+        let successMsg = "Correct!";
+        
+        if (others.length > 0) {
+            successMsg += ` (Another solution: "${others[0]}")`;
+        }
+
+        feedback.innerText = successMsg;
+        feedback.style.color = "green";
+        
         if (nextBtn) nextBtn.style.display = "block";
         if (submitBtn) submitBtn.style.display = "none";
     } else {
-        const displayAnswer = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
+        // FAILURE LOGIC
+        const displayAnswer = answers[0];
         feedback.innerText = `Incorrect. A correct answer would be: ${displayAnswer}`;
         feedback.style.color = "red";
     }

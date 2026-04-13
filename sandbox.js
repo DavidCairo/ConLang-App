@@ -1,11 +1,19 @@
 window.updateNumberOptions = function() {
     const inputElement = document.getElementById('test-input');
     const numberSelect = document.getElementById('test-number');
+    const caseSelect = document.getElementById('test-case');
     
     if (!inputElement || !numberSelect) return;
 
     const input = inputElement.value.trim().toLowerCase();
     const noun = nouns[input];
+    const currentCase = caseSelect ? caseSelect.value : "NOM";
+
+    // 1. If Case is "ROOT", force only Singular (since Root doesn't change)
+    if (currentCase === "ROOT") {
+        numberSelect.innerHTML = '<option value="singular">N/A (Root)</option>';
+        return;
+    }
 
     // If word not found, default to singular
     if (!noun) {
@@ -23,9 +31,9 @@ window.updateNumberOptions = function() {
     } else if (noun.class === "inanimate") {
         numberSelect.innerHTML = `
             <option value="singular">Singular</option>
-            <option value="plural">Plural (Indefinite)</option>`;
+            <option value="plural">Indefinite</option>`;
     } else if (noun.class === "abstract") {
-        numberSelect.innerHTML = `<option value="singular">Singular</option>`;
+        numberSelect.innerHTML = `<option value="singular">Indefinite</option>`;
     }
 };
 
@@ -51,12 +59,16 @@ window.runSandboxTest = function() {
 
         // Logic check
         let result = "";
-        if (caseType === "NOM") {
-            result = NR(input); // Pass the key to your NR helper
+        if (caseType === "ROOT") {
+            // Just the root, no grammar applied
+            result = nounObj.root; 
+        } else if (caseType === "NOM") {
+            // Use your new Nominative generator with number support
+            result = NOM(nounObj, num); 
         } else if (caseType === "ACC") {
-            result = ACC(nounObj, num); // Pass the object to the safety wrapper
+            result = ACC(nounObj, num); 
         } else if (caseType === "ERG") {
-            result = ERG(nounObj, num); // Pass the object to the safety wrapper
+            result = ERG(nounObj, num); 
         }
         
         resultDisplay.innerText = result;

@@ -1,4 +1,61 @@
 const verbConjugator = {
+    // Vowel Matrix
+    vowelMatrix: {
+        'a':  { 'a':'a',  'i':'ai', 'e':'a',  'u':'a',  'o':'oi', 'y':'y', 'aa':'aa', 'ii':'ai', 'ee':'ee', 'uu':'uu', 'oo':'oi' },
+        'i':  { 'a':'ia', 'i':'i',  'e':'ie', 'u':'iu', 'o':'io', 'y':'y', 'aa':'iaa', 'ii':'ii', 'ee':'iee', 'uu':'iuu', 'oo':'ioo' },
+        'e':  { 'a':'a',  'i':'i',  'e':'e',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
+        'u':  { 'a':'a',  'i':'i',  'e':'u',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
+        'o':  { 'a':'a',  'i':'o',  'e':'o',  'u':'o',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
+        'y':  { 'a':'y',  'i':'y',  'e':'y',  'u':'y',  'o':'y',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'y',  'uu':'uu', 'oo':'oo' },
+        'aa': { 'a':'aa', 'i':'ai', 'e':'aa', 'u':'aa', 'o':'aa', 'y':'aa','aa':'aa', 'ii':'ai', 'ee':'aa', 'uu':'aa', 'oo':'aa' },
+        'ii': { 'a':'iaa','i':'ii', 'e':'iee','u':'iuu','o':'ioo','y':'ii','aa':'iaa', 'ii':'ii', 'ee':'iee', 'uu':'iuu', 'oo':'ioo' },
+        'ee': { 'a':'ee', 'i':'ee', 'e':'ee', 'u':'ee', 'o':'ee', 'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
+        'uu': { 'a':'uu', 'i':'ii', 'e':'uu', 'u':'uu', 'o':'oo', 'y':'uu','aa':'aa', 'ii':'ii', 'ee':'uu', 'uu':'uu', 'oo':'oo' },
+        'oo': { 'a':'oo', 'i':'oi', 'e':'oo', 'u':'oo', 'o':'oo', 'y':'oo','aa':'aa', 'ii':'oi', 'ee':'oo', 'uu':'oo', 'oo':'oo' }
+    },
+
+    combineVowels: function(v1, v2, precedingText = "") {
+    let result = this.vowelMatrix[v1]?.[v2] || v1;
+
+    // 1. Identify the immediately preceding consonant
+    const lastChar = precedingText.slice(-1).toLowerCase();
+    // 2. Identify the cluster (the last two characters)
+    const cluster = precedingText.slice(-2).toLowerCase();
+
+    const glidables = ['t', 'd', 'k', 's', 'r'];
+    const forbiddenClusters = ['tr', 'pr', 'kr', 'ts'];
+
+    // Check if we should apply the glide
+    if (glidables.includes(lastChar)) {
+        // BLOCKED: If the cluster is in our forbidden list, do NOT glide
+        if (forbiddenClusters.includes(cluster)) {
+            // Keep the 'i' version (the first option in your table)
+            // No changes needed to 'result' as the matrix defaults to 'i'
+        } 
+        // ALLOWED: Apply the glide
+        else if (result.startsWith('i') && result.length > 1) {
+            result = 'j' + result.slice(1);
+        }
+    }
+    
+    return result;
+},
+
+    // Helper to get full vowel at start or end (handles long vowels like 'aa')
+    getVowelCluster: function(text, fromStart = true) {
+        const vowels = "aeiouy";
+        if (fromStart) {
+            let v = text[0];
+            if (vowels.includes(text[1]) && text[1] === v) return v + v;
+            return v;
+        } else {
+            let v = text.slice(-1);
+            let p = text.slice(-2, -1);
+            if (vowels.includes(p) && p === v) return v + v;
+            return v;
+        }
+    },
+
     // Check starting letter 
     getStartType: function(stem) {
         const first = stem[0];
@@ -82,26 +139,15 @@ const verbConjugator = {
 
     applyPrefixPhonology: function(prefix, stem) {
         if (!prefix) return stem;
+        const vowels = "aeiouy";
+        const pLastV = this.getVowelCluster(prefix, false);
+        const sFirstV = this.getVowelCluster(stem, true);
 
-        const pLast = prefix.slice(-1);
-        const pPenult = prefix.slice(-2, -1);
-        const sFirst = stem[0];
-        const sSecond = stem[1];
-
-        const pIsLong = this.isHeavy(pPenult, pLast);
-        const sIsLong = this.isHeavy(sFirst, sSecond);
-        const isVowelMeeting = "aeiou".includes(pLast) && "aeiou".includes(sFirst);
-
-        if (isVowelMeeting) {
-            const pFull = pPenult + pLast;
-            const sFull = sFirst + sSecond;
-
-            if (pFull === "aa" && sFull === "ii") return prefix.slice(0, -2) + "ai" + stem.slice(2);
-            if (pFull === "ii") return prefix.slice(0, -2) + "j" + stem;
-            if (pFull === "aa") return prefix.slice(0, -2) + stem;
-            if (sIsLong && !pIsLong) return prefix.slice(0, -1) + stem;
-            if (pIsLong && !sIsLong) return prefix + stem.slice(1);
-            return prefix.slice(0, -1) + stem;
+        if (vowels.includes(pLastV[0]) && vowels.includes(sFirstV[0])) {
+            const preceding = prefix.slice(0, -pLastV.length); 
+            const combined = this.combineVowels(pLastV, sFirstV, preceding);
+            
+            return prefix.slice(0, -pLastV.length) + combined + stem.slice(sFirstV.length);
         }
         return prefix + stem;
     },
@@ -140,27 +186,16 @@ const verbConjugator = {
 
     applySuffixPhonology: function(stem, suffix) {
         if (!suffix) return stem;
-        const vowels = "aeiou";
-        const sLast = stem.slice(-1).toLowerCase();
-        const sPenult = stem.slice(-2, -1).toLowerCase();
-        const sufFirst = suffix[0].toLowerCase();
+        const vowels = "aeiouy";
+        const sLastV = this.getVowelCluster(stem, false);
+        const sufFirstV = this.getVowelCluster(suffix, true);
 
-        if (!vowels.includes(sLast)) return stem + suffix;
+        if (vowels.includes(sLastV[0]) && vowels.includes(sufFirstV[0])) {
+            const preceding = stem.slice(0, -sLastV.length); 
+            const combined = this.combineVowels(sLastV, sufFirstV, preceding);
 
-        const stemIsLong = this.isHeavy(sPenult, sLast); // e.g., 'aa'
-        const suffixStartsHeavy = this.isHeavy(sufFirst); // e.g., 'a', 'o', or 'i'
-
-        // RULE 1: Long vowels of the stem override suffixes
-        if (stemIsLong) {
-            const trimmedSuffix = vowels.includes(sufFirst) ? suffix.slice(1) : suffix;
-            return stem + trimmedSuffix;
+            return stem.slice(0, -sLastV.length) + combined + suffix.slice(sufFirstV.length);
         }
-
-        // RULE 2: Heavy short vowels of the suffix override short stem vowels
-        if (suffixStartsHeavy) {
-            return stem.slice(0, -1) + suffix;
-        }
-
         return stem + suffix;
     },
 

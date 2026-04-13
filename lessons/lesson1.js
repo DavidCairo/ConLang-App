@@ -26,9 +26,9 @@ const lesson1Data = {
                 title: "First Nouns",
                 description: "Translate these basic words.",
                 questions: [
-                    { tv: NR("woman"), en: "woman" },
-                    { tv: NR("water"), en: "water" },
-                    { tv: NR("bird"), en: "bird" },
+                    { tv: ROOT("woman"), en: "woman" },
+                    { tv: ROOT("water"), en: "water" },
+                    { tv: ROOT("bird"), en: "bird" },
                 ]
             },
             {
@@ -47,12 +47,12 @@ const lesson1Data = {
                 title: "More Nouns",
                 description: "Translate these basic words.",
                 questions: [
-                    { tv: NR("fire"), en: "fire" },
+                    { tv: ROOT("fire"), en: "fire" },
                     // { tv: V(verbs.love), en: "to love" },
                     // { tv: V(verbs.sleep), en: "to sleep" },
                     // { tv: V(verbs.see), en: "to see" },
-                    { tv: NR("grass"), en: "grass"},
-                    {tv: NR("name"), en: "name"},
+                    { tv: ROOT("grass"), en: "grass"},
+                    {tv: ROOT("name"), en: "name"},
                 ]
             },
             {
@@ -66,8 +66,8 @@ const lesson1Data = {
                 title: "Classifying Nouns",
                 description: "Is it Animate or Inanimate?",
                 groups: {
-                    Animate: [NR("woman"),NR("fire"), NR("bird"),NR("name")],
-                    Inanimate: [NR("grass"), NR("water")],
+                    Animate: [ROOT("woman"),ROOT("fire"), ROOT("bird"),ROOT("name")],
+                    Inanimate: [ROOT("grass"), ROOT("water")],
                 }
             },
             {
@@ -81,9 +81,9 @@ const lesson1Data = {
                 title: "Even More Nouns",
                 description: "Translate these basic words.",
                 questions: [
-                    { tv: NR("man"), en: "man" },
-                    { tv: NR("sun"), en: "sun" },
-                    { tv: NR("cat"), en: "cat" },
+                    { tv: ROOT("man"), en: "man" },
+                    { tv: ROOT("sun"), en: "sun" },
+                    { tv: ROOT("cat"), en: "cat" },
                 ]
             },
             {
@@ -97,15 +97,15 @@ const lesson1Data = {
                 title: "The Other Way",
                 description: "Translate these words into Tvaali",
                 questions: [
-                    {en: "man", tv: NR("man"), type: "en_to_tv"},
-                    { tv: NR("sun"), en: "sun", type: "en_to_tv" },
-                    { tv: NR("cat"), en: "cat", type: "en_to_tv" },
-                    { tv: NR("grass"), en: "grass", type: "en_to_tv"},
-                    {tv: NR("name"), en: "name", type: "en_to_tv"},
-                    { tv: NR("fire"), en: "fire", type: "en_to_tv" },
-                    { tv: NR("bird"), en: "bird", type: "en_to_tv" },
-                    { tv: NR("water"), en: "water", type: "en_to_tv" },
-                    { tv: NR("woman"), en: "woman", type: "en_to_tv" },
+                    {en: "man", tv: ROOT("man"), type: "en_to_tv"},
+                    { tv: ROOT("sun"), en: "sun", type: "en_to_tv" },
+                    { tv: ROOT("cat"), en: "cat", type: "en_to_tv" },
+                    { tv: ROOT("grass"), en: "grass", type: "en_to_tv"},
+                    {tv: ROOT("name"), en: "name", type: "en_to_tv"},
+                    { tv: ROOT("fire"), en: "fire", type: "en_to_tv" },
+                    { tv: ROOT("bird"), en: "bird", type: "en_to_tv" },
+                    { tv: ROOT("water"), en: "water", type: "en_to_tv" },
+                    { tv: ROOT("woman"), en: "woman", type: "en_to_tv" },
                 ]
             },
         ]},
@@ -160,11 +160,6 @@ const lesson1Data = {
                 <p> You may wonder how we can know if an inanimate nouns is the subject of a sentence. This will soon be answered by the ergative case.</p>
                 `,
             },
-            // {
-            //     type: "translation",
-            //     title: "Step 4: Full Sentences",
-            //     useGlobalQuestions: true 
-            // }
         ]},
         // --- Sublesson 3 ---
         {title: "Verbs and Pronoun Markers", modules: [
@@ -183,9 +178,9 @@ const lesson1Data = {
                 title: "First Verbs",
                 description: "Translate these 3rd person verbs.",
                 questions: [
-                    {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: "He/She loves"},
-                    {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: "He/She sleeps"},
-                    {tv: V(verbs.see, "animate", "3rd", "singular", "perfective present"), en: "He/She sees"},
+                    {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: ["he loves", "she loves"]},
+                    {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: ["he sleeps", "she sleeps"]},
+                    {tv: V(verbs.see, "animate", "3rd", "singular", "perfective present"), en: ["he sees", "she sees"]},
                 ]
             },
             {
@@ -266,45 +261,134 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        tvaali: NOM("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
                         english: "the woman sleeps"
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present"),
+                        tvaali: NOM("woman") + " " + ACC(nouns.water) + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"),
                         english: "the woman loves water"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NOM("man") + " " + ACC(nouns.grass) + " " + V(verbs.see, nouns.man.class, "3rd", "singular", "perfective present"),
+                        english: "the man sees grass"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ACC(nouns.woman, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                        english: "i see the woman"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ACC(nouns.fire, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                        english: ["he sees the fire", "she sees the fire"]
+                    },
+                ]
+            },
+            {
+                type: "infoCard",
+                title: "A Step Up",
+                content:`
+                <p> Let's try the other direction!</p>
+                `
+            },
+            {
+                type: "translation",
+                title: "Step 4: Full Sentences",
+                description: "Translate the following sentences.",
+                questions: [
+                    {
+                        lessonId: 1,
+                        type: "en_to_tv",
+                        tvaali: NOM("man") + " " + V(verbs.sleep, nouns.man.class, "3rd", "singular", "perfective present"),
+                        english: "the man sleeps"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "en_to_tv",
+                        tvaali: NOM("bird") + " " + ACC(nouns.grass) + " " + V(verbs.love, nouns.bird.class, "3rd", "singular", "perfective present"),
+                        english: "the bird loves grass"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "en_to_tv",
+                        tvaali: NOM("man") + " " + ACC(nouns.bird) + " " + V(verbs.see, nouns.cat.class, "3rd", "singular", "perfective present"),
+                        english: "the cat sees the bird"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "en_to_tv",
+                        tvaali: ACC(nouns.woman, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                        english: "i see the woman"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "en_to_tv",
+                        tvaali: ACC(nouns.sun, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                        english: ["he sees the sun", "she sees the sun"]
+                    },
+                ]
+            },
+            {
+                type: "infoCard",
+                title: "Inanimate Subjects",
+                content:`
+                <p> What happens when the subject is inanimate? We get a new subject marker!</p>
+                <p> Note that inanimate nouns in Tvaali are assumed to be indefinite in number. So, unless specified otherwise, it is unclear how many of a thing you have. </p>
+                <p> There does exist a singular for inanimate nouns (and a corresponding subject marker) but we will see these later on. </p>
+                <p> For now, let's see what inanimate subjects look like!</p>
+                `
+            },
+            {
+                type: "translation",
+                title: "Step 4: Full Sentences",
+                description: "Translate the following sentences.",
+                questions: [
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: NOM(nouns.stone, "plural") + " " + V(verbs.fall, nouns.stone.class, "3rd", "plural", "perfective present"),
+                        english: "the stone falls"
+                    },
+                ]
+            },
+        ]},
+        // --- Sublesson 5 ---
+        {title: "The Ergative Case", modules: [
+            {
+                type: "infoCard",
+                title: "The Ergative",
+                content:`
+                <p> In all sentences so far the subject has been animate. But what happens when the subject of a transitive verb is inanimate and the object is animate? How can we tell what happens?</p>
+                <p> For this special case (an inanimate subject of a transitive verb) Tvaali has a noun case. This is the <strong>ergative</strong> case, typically marked with -oo or -oot. </p>
+                <p> This is the reason we look at the difference between transitive and intransitive verbs! </p>
+                <p> Let's see this is action. </p>
+                `
+            },
+            {
+                type: "translation",
+                title: "The Ergative Case",
+                description: "Translate the following Tvaali sentences.",
+                questions: [
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ERG(nouns.stone, "plural") + " " + ACC(nouns.earth, "plural") + " " + V(verbs.hit, nouns.stone.class, "3rd", "plural", "perfective present"), 
+                        english: "the stone hits the earth"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ERG(nouns.snow, "plural") + " " + ACC(nouns.grass, "plural") + " " + V(verbs.hit, nouns.snow.class, "3rd", "plural", "perfective present"),
+                        english: ["the snow hits the grass", "snow hits the grass"]
                     },
                 ]
             },
         ]}
-    ],
-
-    // Sentences
-    questions: [
-        {
-            lessonId: 1,
-            type: "en_to_tv",
-            english: "The woman loves water",
-            tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present")
-        },
-        {
-            lessonId: 1,
-            type: "tv_to_en",
-            tvaali: NR("woman") + " " + ACC(nouns.water, "singular") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "present"),
-            english: "the woman loves water"
-        },
-        {
-            lessonId: 1,
-            type: "en_to_tv",
-            english: "The woman sleeps",
-            tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "present")
-        },
-        {
-            lessonId: 1,
-            type: "tv_to_en",
-            tvaali: NR("woman") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "present"),
-            english: ["the woman sleeps", "the woman is sleeping"]
-        }
-    ]   
+    ], 
 };
