@@ -80,15 +80,19 @@ function renderDictionary() {
 
         <div class="card sandbox-card">
             <h3>Grammar Tester</h3>
-            <div class="sandbox-controls">
+            
+            <div class="sandbox-global-controls">
                 <select id="test-type" onchange="toggleSandboxFields(); updateNumberOptions();">
                     <option value="noun">Noun Caser</option>
                     <option value="verb">Verb Conjugator</option>
                 </select>
+                <input type="text" id="test-input" oninput="updateNumberOptions()" placeholder="Type a word...">
+            </div>
 
-                <input type="text" id="test-input" oninput="updateNumberOptions()" placeholder="Type a noun (e.g., woman, stone)">
+            <div class="sandbox-display-wrapper">
                 
-                <div id="noun-fields">
+                <div id="noun-fields" class="sandbox-column">
+                    <label>Noun Settings</label>
                     <select id="test-case" onchange="updateNumberOptions()">
                         <option value="ROOT">Root</option>
                         <option value="NOM">Nominative</option>
@@ -98,7 +102,8 @@ function renderDictionary() {
                     <select id="test-number"></select>
                 </div>
 
-                <div id="verb-fields" style="display:none;">
+                <div id="verb-fields" class="sandbox-column">
+                    <label>Verb Settings</label>
                     <select id="test-person">
                         <option value="1st inclusive">1st inclusive</option>
                         <option value="1st exclusive">1st exclusive</option>
@@ -119,40 +124,43 @@ function renderDictionary() {
 
                     <select id="test-tense"></select>
                 </div>
-
-                <button onclick="runSandboxTest()">Generate Form</button>
             </div>
-            <h2 id="sandbox-result" style="color: #2c3e50; margin-top: 15px;">---</h2>
+
+            <div class="sandbox-footer">
+                <button class="primary-btn" onclick="runSandboxTest()">Generate Form</button>
+                <h2 id="sandbox-result">---</h2>
+            </div>
         </div>
 
-        <div class="card">
-            <h3>Nouns</h3>
-            <table class="dict-table">
-                <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
-                <tbody>
-                    ${Object.entries(nouns).map(([en, data]) => `
-                        <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
+        <div class="dict-grid">
+            <div class="card">
+                <h3>Nouns</h3>
+                <table class="dict-table">
+                    <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
+                    <tbody>
+                        ${Object.entries(nouns).map(([en, data]) => `
+                            <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="card">
-            <h3>Verbs</h3>
-            <table class="dict-table">
-                <thead><tr><th>English</th><th>Stem</th><th>Transitive</th></tr></thead>
-                <tbody>
-                    ${Object.entries(verbs).map(([en, data]) => `
-                        <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Yes" : "No"}</td></tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <div class="card">
+                <h3>Verbs</h3>
+                <table class="dict-table">
+                    <thead><tr><th>English</th><th>Stem</th><th>Trans.</th></tr></thead>
+                    <tbody>
+                        ${Object.entries(verbs).map(([en, data]) => `
+                            <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Y" : "N"}</td></tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 
     app.innerHTML = html;
     
-    // Ensure all dynamic fields are set correctly on load
     toggleSandboxFields(); 
     updateNumberOptions();
     filterTenses();
@@ -168,53 +176,48 @@ window.showInfo = function(lessonId) {
 
     if (!modal || !content) return;
 
-    let vocabRows = "";
-    // Pull from the lesson's main newWords list
+    let vocabCards = "";
     lesson.newWords.forEach(tvaaliRoot => {
-    const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
-    const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
-    
-    let english = "Unknown";
-    let meta = "";
+        const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
+        const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
+        
+        let english = "Unknown";
+        let meta = "";
 
-    if (nounEntry) {
-        english = nounEntry[0];
-        meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
-    } else if (verbEntry) {
-        english = verbEntry[0];
-        meta = `<span class="meta-tag tag-verb">verb</span>`;
-    }
-    
-    vocabRows += `
-        <tr>
-            <td>
-                <div class="vocab-info">
-                    <strong>${english}</strong> ${meta}
+        if (nounEntry) {
+            english = nounEntry[0];
+            meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
+        } else if (verbEntry) {
+            english = verbEntry[0];
+            meta = `<span class="meta-tag tag-verb">verb</span>`;
+        }
+        
+        // Use a card-style div instead of a table row
+        vocabCards += `
+            <div class="modal-vocab-row">
+                <div class="vocab-left">
+                    <span class="en-word">${english}</span>
+                    ${meta}
                 </div>
-            </td>
-            <td class="tvaali-text">${tvaaliRoot}</td>
-        </tr>
-    `;
-});
+                <div class="vocab-right">
+                    <span class="tvaali-text">${tvaaliRoot}</span>
+                </div>
+            </div>
+        `;
+    });
 
     content.innerHTML = `
         <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2>${lesson.title}</h2>
-        <p>${lesson.description}</p>
+        <div class="modal-header">
+            <h2>${lesson.title}</h2>
+            <p>${lesson.description}</p>
+        </div>
         
         <div class="modal-vocab-section">
             <h3>New Vocabulary</h3>
-            <table class="dict-table">
-                <thead>
-                    <tr>
-                        <th>English</th>
-                        <th>Tvaali</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${vocabRows}
-                </tbody>
-            </table>
+            <div class="modal-vocab-list">
+                ${vocabCards}
+            </div>
         </div>
     `;
 

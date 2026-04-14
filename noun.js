@@ -135,7 +135,7 @@ const nounCaser = {
             const lastChar = root.slice(-1).toLowerCase();
 
             // 1. Vowel stem "o" gets "am" with removed "o"
-            if (lastChar === 'o') {
+            if (lastChar === 'o' && endingType !== "longVowel") {
                 return root.slice(0, -1) + "am";
             }
 

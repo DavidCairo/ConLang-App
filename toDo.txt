@@ -1,3 +1,5 @@
+check tvaali to english hover (remove the first and last vowel in root search)
+oroam is incorrect, so getAccusative does not work as intended
 start of lesson info card fix
 declension table
 verb declension and total structure map
