@@ -410,3 +410,47 @@ button:active { transform: scale(0.98); }
         padding: 20px;
     }
 }
+
+/* ==========================================================================
+   12. INTERACTIVE ELEMENTS (Tooltips)
+   ========================================================================== */
+
+/* Word Tooltip Container */
+.word-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    border-bottom: 1px dotted #888;
+}
+
+/* Tooltip Popover (The hidden text) */
+.word-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    
+    /* Position it above the word */
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%; 
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Visuals and Animation */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    pointer-events: none; /* Crucial: stops the tooltip from flickering */
+}
+
+/* Show on hover */
+.word-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
