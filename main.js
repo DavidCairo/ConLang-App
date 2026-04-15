@@ -1,5 +1,27 @@
 // Current possible quizes 
-const allLessons = [lesson1Data]
+const allLessons = [lesson1Data, lesson2Data, lesson3Data, lesson4Data, lesson5Data, lesson6Data, lesson7Data, lesson8Data, lesson9Data, lesson10Data, lesson11Data, lesson12Data, lesson13Data, lesson14Data, lesson15Data, lesson16Data, lesson17Data, lesson18Data, lesson19Data, lesson20Data, lesson21Data, lesson22Data, lesson23Data, lesson24Data]
+const courseUnits = [
+    {
+        title: "The Basics",
+        color: "#e3f2fd", // Light Blue
+        lessonIds: [1, 2, 3, 4, 5]
+    },
+    {
+        title: "Action",
+        color: "#f3e5f5", // Light Purple
+        lessonIds: [6, 7, 8, 9, 10, 11, 12, 13]
+    },
+    {
+        title: "Social Lense",
+        color: "#e8f5e9", // Light Green
+        lessonIds: [14, 15, 16, 17, 18]
+    },
+    {
+        title: "Connectivity",
+        color: "#f5e9e8ff", // Light Red
+        lessonIds: [19, 20, 21, 22, 23, 24]
+    },
+];
 
 // Variables
 let activeLesson = null;
@@ -25,47 +47,61 @@ function renderHome() {
     const app = document.getElementById('app');
     activeLesson = null;
     
-    app.innerHTML = `
+    let html = `
         <div class="nav-container">
             <button class="dict-btn" onclick="renderDictionary()">📖 Dictionary</button>
         </div>
-        <h1>Tvaali Lessons</h1>
-        <div id="lesson-list"></div>
+        <h1>Tvaali Course</h1>
     `;
-    
-    const list = document.getElementById('lesson-list');
 
-    allLessons.forEach(lesson => {
-        const div = document.createElement('div');
-        div.className = 'lesson-card';
-        div.style.position = 'relative'; // Allows absolute positioning of the info button
-        
-        const subLessons = lesson.subLessons || [];
-        const progressSegments = subLessons.map((sub, index) => {
-            const isDone = completedSubLessons.includes(`${lesson.id}-${index}`);
-            const statusClass = isDone ? 'segment-done' : 'segment-pending';
-            return `
-                <div class="progress-segment ${statusClass}" 
-                     onclick="startSubLesson(${lesson.id}, ${index})"
-                     title="${sub.title}">
-                    <span class="segment-number">${index + 1}</span>
+    courseUnits.forEach(unit => {
+        html += `
+            <div class="unit-container" style="background-color: ${unit.color}">
+                <h2 class="unit-header">${unit.title}</h2>
+                <div class="unit-lessons">
+        `;
+
+        // Filter allLessons to find the ones belonging to this unit
+        const unitLessons = allLessons.filter(l => unit.lessonIds.includes(l.id));
+
+        unitLessons.forEach(lesson => {
+            const subLessons = lesson.subLessons || [];
+            
+            // FIX: Filter progress specifically for this lesson ID
+            const lessonCompletions = completedSubLessons.filter(key => key.startsWith(`${lesson.id}-`));
+            const doneCount = lessonCompletions.length;
+            const totalCount = subLessons.length;
+
+            const progressSegments = subLessons.map((sub, index) => {
+                const isDone = completedSubLessons.includes(`${lesson.id}-${index}`);
+                const statusClass = isDone ? 'segment-done' : 'segment-pending';
+                return `
+                    <div class="progress-segment ${statusClass}" 
+                         onclick="startSubLesson(${lesson.id}, ${index})"
+                         title="${sub.title}">
+                        <span class="segment-number">${index + 1}</span>
+                    </div>
+                `;
+            }).join('');
+
+            html += `
+                <div class="lesson-card">
+                    <button class="info-btn-home" onclick="showInfo(${lesson.id})" title="Lesson Info">ⓘ</button>
+                    <h3>Lesson ${lesson.id}: ${lesson.title}</h3>
+                    <div class="lesson-progress-container">
+                        <div class="progress-bar-line">
+                            ${progressSegments}
+                        </div>
+                        <p class="progress-text">${doneCount} / ${totalCount} Parts Complete</p>
+                    </div>
                 </div>
             `;
-        }).join('');
+        });
 
-        div.innerHTML = `
-            <button class="info-btn-home" onclick="showInfo(${lesson.id})" title="Lesson Info">ⓘ</button>
-            
-            <h3>Lesson ${lesson.id}: ${lesson.title}</h3>
-            <div class="lesson-progress-container">
-                <div class="progress-bar-line">
-                    ${progressSegments}
-                </div>
-            </div>
-            <p class="progress-text">${completedSubLessons.length} / ${subLessons.length} Parts Complete</p>
-        `;
-        list.appendChild(div);
+        html += `</div></div>`; // Close unit-lessons and unit-container
     });
+
+    app.innerHTML = html;
 }
 
 // Make the dictionary at the homepage
@@ -177,34 +213,39 @@ window.showInfo = function(lessonId) {
     if (!modal || !content) return;
 
     let vocabCards = "";
-    lesson.newWords.forEach(tvaaliRoot => {
-        const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
-        const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
-        
-        let english = "Unknown";
-        let meta = "";
+    const wordsToDisplay = lesson.newWords || [];
 
-        if (nounEntry) {
-            english = nounEntry[0];
-            meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
-        } else if (verbEntry) {
-            english = verbEntry[0];
-            meta = `<span class="meta-tag tag-verb">verb</span>`;
-        }
-        
-        // Use a card-style div instead of a table row
-        vocabCards += `
-            <div class="modal-vocab-row">
-                <div class="vocab-left">
-                    <span class="en-word">${english}</span>
-                    ${meta}
+    if (wordsToDisplay.length === 0) {
+        vocabCards = `<p style="text-align:center; color:#666; padding:20px;">No new vocabulary introduced in this lesson.</p>`;
+    } else {
+        wordsToDisplay.forEach(tvaaliRoot => {
+            const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
+            const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
+            
+            let english = "Unknown";
+            let meta = "";
+
+            if (nounEntry) {
+                english = nounEntry[0];
+                meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
+            } else if (verbEntry) {
+                english = verbEntry[0];
+                meta = `<span class="meta-tag tag-verb">verb</span>`;
+            }
+            
+            vocabCards += `
+                <div class="modal-vocab-row">
+                    <div class="vocab-left">
+                        <span class="en-word">${english}</span>
+                        ${meta}
+                    </div>
+                    <div class="vocab-right">
+                        <span class="tvaali-text">${tvaaliRoot}</span>
+                    </div>
                 </div>
-                <div class="vocab-right">
-                    <span class="tvaali-text">${tvaaliRoot}</span>
-                </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    }
 
     content.innerHTML = `
         <span class="close-modal" onclick="closeModal()">&times;</span>

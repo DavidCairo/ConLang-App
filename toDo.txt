@@ -14,3 +14,73 @@ script learner based on arabic
 
 
 multiple language compatible
+
+
+
+All features
+Nouns:
+
+Gender (animate inanimate abstract)
+
+Case (nominative ergative accusative dative genitive locative transportative directive ablative instrumentative comitative) with split ergativity
+
+Number (singular, dual, paucal, plural)
+
+Pronouns (1st inclusive and exclusive, 2nd formal and informal, 3rd animate, inanimate, abstract, indefinite animate and inanimate)
+
+Demonstratives (close medial distal)
+
+WH
+
+Participles (“the seeing one”)
+
+Superlatives and the likes
+
+Definite article for stress
+
+Numbers (cardinal ordinal rank distributive distributive-rank adverbial multiplicative)
+
+
+
+Adjectives (verb-like and noun-like)
+
+
+
+Verbs:
+
+Subject marking (1st inclusive and exclusive, 2nd formal and informal, 3rd animate, inanimate, abstract, indefinite animate and inanimate)
+
+Passive
+
+Applicative (benefactive, instrumental, directive, ablative, comitative)
+
+Detransative
+
+Tense (perfective/continuous + past, pluperfect, perfect, future in past, present, future perfective, future in future, future, infinitive and habitual past, perfect, present)
+
+Converbs (imperfective, perfective, causal, purposive, concessive, terminative, resultative, preparative, consecutive, immediative, sequencial)
+
+Modality (interrogative, speculative, deductive, assumptive, abilitive, volitive, permissive, obligative, honorific, imperative)
+
+Causative
+
+Reflexive
+
+Evidential (reportative, inferential, dubitative)
+
+Negation
+
+
+
+Auxiliary
+
+Complementizer
+
+
+
+Adverbs
+
+
+
+Derivational morphology
+

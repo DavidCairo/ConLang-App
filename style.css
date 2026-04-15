@@ -354,3 +354,59 @@ button:active { transform: scale(0.98); }
     transform: rotate(90deg);
     display: inline-block;
 }
+
+/* ==========================================================================
+   11. UNIT BOXES (Curriculum Grouping)
+   ========================================================================== */
+
+.unit-container {
+    padding: 35px;
+    margin-bottom: 50px;
+    border-radius: 25px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.unit-header {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    color: #2c3e50;
+    text-align: left;
+    border-bottom: 3px solid rgba(0,0,0,0.1);
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+.unit-lessons {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two lessons side-by-side */
+    gap: 25px;
+}
+
+.lesson-card {
+    background: white;
+    margin: 0 !important; /* Reset margin as the grid handles spacing */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.progress-text {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Ensure the layout stacks nicely on smaller screens */
+@media (max-width: 900px) {
+    .unit-lessons {
+        grid-template-columns: 1fr;
+    }
+    
+    .unit-container {
+        padding: 20px;
+    }
+}
