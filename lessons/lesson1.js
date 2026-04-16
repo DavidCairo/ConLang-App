@@ -11,7 +11,7 @@ const lesson1Data = {
     id: 1,
     title: "The basics",
     description: "In this first chapter of lessons, we learn about nouns and verbs, the Subject-Object-Verb structure, noun classes, and the start of the Ergative-Accusative system.",
-    newWords: ["sidhi", "aaloo", "aim", "iilha", "roshuu", "nedhaan", "djaavuum", "rjiimai", "oroo", "aahvuu", "irni", "nimiir", "naama", "tarkaa", "araantho", "tsiipli"],
+    // newWords: ["sidhi", "aaloo", "aim", "iilha", "roshuu", "nedhaan", "djaavuum", "rjiimai", "oroo", "aahvuu", "irni", "nimiir", "naama", "tarkaa", "araantho", "tsiipli"],
     
     subLessons: [
         {title: "Nouns and Animacy", modules: [
@@ -24,7 +24,7 @@ const lesson1Data = {
             {
                 type: "vocabDrill",
                 title: "First Nouns",
-                description: "Translate these basic words.",
+                description: "Translate these basic words. You can hover over them to see the translation. Purple highlights will indicate that a word is new.",
                 newWords: ["sidhi","aaloo","djaavuum"],
                 questions: [
                     { tv: ROOT("woman"), en: "woman" },
@@ -36,10 +36,12 @@ const lesson1Data = {
                 type: "infoCard",
                 title: "Animacy in Tvaali",
                 content: `
-                    <p>In Tvaali, nouns are loosely classified by <strong>animacy</strong>. However, not all words fall in the obvious catergory.</p>
+                    <p>In Tvaali, nouns are loosely classified by <strong>animacy</strong>. This is similar to gender in for example french or spanish. In french any noun is either male or female. Tvaali does not have any male/female distinction, but instead has distinction based on animacy. Therefore all words are categorized as <strong>animate, inanimate</strong>, or <strong> abstract</strong></p> 
+                    <p> The last "gender" (this is the linguistic name for it) will only be seen much later on and contains much less nouns compared to the other two. Most of the time, words that describe living things, such as people and animals, are animate. All other words are either inanimite or abstract. </p>
+                    <p>However, not all words fall in the obvious catergory. Some things that (used to) carry cultural significance are animate, despite not being "alive". For example </p>
                     <ul>
-                        <li>Some words are clear: woman is animate. </li>
-                        <li>Some are less obvious: fire is animte, but grass is inanimate.</li>
+                        <li>Woman and bird are animate. </li>
+                        <li>However, fire is animate, but grass is inanimate.</li>
                     </ul>
                 `,
             },
@@ -52,13 +54,16 @@ const lesson1Data = {
                     { tv: ROOT("fire"), en: "fire" },
                     { tv: ROOT("grass"), en: "grass"},
                     {tv: ROOT("name"), en: "name"},
+                    { tv: ROOT("woman"), en: "woman" },
+                    { tv: ROOT("water"), en: "water" },
+                    { tv: ROOT("bird"), en: "bird" },
                 ]
             },
             {
                 type: "infoCard",
                 title: "The test",
                 content: `
-                    <p>Let's test if you remember what category the nouns fall!</p>`,
+                    <p>The concept of animacy plays a large roll in Tvaali. A lot of grammatical things are dependend on it. So let's test if you remember in what category these nouns fall!</p>`,
             },
             {
                 type: "sorting",
@@ -73,7 +78,7 @@ const lesson1Data = {
                 type: "infoCard",
                 title: "More nouns!",
                 content: `
-                    <p>Now that the first nouns are in, let's learn some more!</p>`,
+                    <p>Repetition is key, so we will repeat the words we have already learned. But we will add some more!</p>`,
             },
             {
                 type: "vocabDrill",
@@ -84,6 +89,12 @@ const lesson1Data = {
                     { tv: ROOT("man"), en: "man" },
                     { tv: ROOT("sun"), en: "sun" },
                     { tv: ROOT("cat"), en: "cat" },
+                    { tv: ROOT("fire"), en: "fire" },
+                    { tv: ROOT("grass"), en: "grass"},
+                    { tv: ROOT("name"), en: "name"},
+                    { tv: ROOT("woman"), en: "woman" },
+                    { tv: ROOT("water"), en: "water" },
+                    { tv: ROOT("bird"), en: "bird" },
                 ]
             },
             {
@@ -101,7 +112,7 @@ const lesson1Data = {
                     { tv: ROOT("sun"), en: "sun", type: "en_to_tv" },
                     { tv: ROOT("cat"), en: "cat", type: "en_to_tv" },
                     { tv: ROOT("grass"), en: "grass", type: "en_to_tv"},
-                    {tv: ROOT("name"), en: "name", type: "en_to_tv"},
+                    { tv: ROOT("name"), en: "name", type: "en_to_tv"},
                     { tv: ROOT("fire"), en: "fire", type: "en_to_tv" },
                     { tv: ROOT("bird"), en: "bird", type: "en_to_tv" },
                     { tv: ROOT("water"), en: "water", type: "en_to_tv" },
@@ -117,21 +128,20 @@ const lesson1Data = {
                 content: `
                     <p>In Tvaali, when an animate noun is the <strong>object</strong> of an action, we use the <strong>Accusative</strong> case.</p>
                     <ul>
-                        <li>The suffix is usually <strong>-am</strong>.</li>
-                        <li>If the root ends in a short vowel, that vowel is deleted!</li>
+                        <li>The suffix is usually <strong>-(a)m</strong>.</li>
+                        <li>If the root ends in a vowel, that vowel is deleted!</li>
                     </ul>
-                    <p> We translate these with "to the ...". </p>
                 `,
-                note: "Example: sidhi (woman) + am becomes sidham."
+                note: "Example: sidhi (woman) + am becomes sidhim."
             },
             {
                 type: "vocabDrill",
                 title: "The Accusative",
                 description: "Translate these accusative forms.",
                 questions: [
-                    { tv: ACC(nouns.woman), en: "to the woman" },
-                    { tv: ACC(nouns.man), en: "to the man" },
-                    { tv: ACC(nouns.fire), en: "to the fire" },
+                    { tv: ACC(nouns.woman), en: "woman" },
+                    { tv: ACC(nouns.man), en: "man" },
+                    { tv: ACC(nouns.fire), en: "fire" },
                 ]
             },
             {
@@ -147,9 +157,9 @@ const lesson1Data = {
                 title: "Inanimate Nouns",
                 description: "Translate the following accusative forms.",
                 questions: [
-                    {tv: ACC(nouns.sun), en: "to the sun"},
-                    {tv: ACC(nouns.grass), en: "to the grass"},
-                    {tv: ACC(nouns.water), en: "to the water"}
+                    {tv: ACC(nouns.sun), en: "sun"},
+                    {tv: ACC(nouns.grass), en: "grass"},
+                    {tv: ACC(nouns.water), en: "water"}
                 ]
             },
             {
@@ -170,7 +180,7 @@ const lesson1Data = {
                 <p> If we want to make any sentence, we need verbs!</p>
                 <p> Verbs in Tvaali take marking for quite a number of things. So, let's introduce them one by one. </p>
                 <p> The only one that is absolutely necessary is the subject marker. This marks what noun in the sentence is the subject and can even replace a pronoun! </p>
-                <p> Let's start with the third perons animate marker <strong> th- </strong>.</p>
+                <p> Let's start with the third perons animate marker <strong> tha- </strong>.</p>
                 `
             },
             {
@@ -206,9 +216,9 @@ const lesson1Data = {
                 type: "infoCard",
                 title: "The Stative - Active Difference",
                 content:`
-                <p> The last bit about verbs (for now) has to do with transitive versus intrnasitive verbs. That is, does the verb typically have an object? </p>
+                <p> The last bit about verbs (for now) has to do with <strong>transitive</strong> versus <strong>intransitive</strong> verbs. That is, does the verb typically have an object? </p>
                 <p> This difference is only important if the subject is inanimate, but nevertheless useful to keep in mind when learning verbs.</p>
-                <p> So let's see if we can classify the verbs we have seen based on if they that an object or not! </p>
+                <p> So let's see if we can classify the verbs we have seen based on if they are an object or not! </p>
                 `
             },
             {
@@ -250,7 +260,7 @@ const lesson1Data = {
                 content:`
                 <p> We can now start with making the first sentences!</p>
                 <p> We have seen how animate nouns function as the subject of a sentence, how all nouns function as the object of a transative verb, and how verbs are modified for the subject of the sentence.</p>
-                <p> Here we will put those things together. Note that in Tvaali the order of words is "subject oject verb". So "I apple eat" would be the normal order in Tvaali. </p>
+                <p> Here we will put those things together. Note that in Tvaali the order of words is "subject object verb". So "I apple eat" would be the normal order in Tvaali. </p>
                 <p> Let's get started.</p>
                 `
             },
@@ -377,6 +387,39 @@ const lesson1Data = {
             {
                 type: "infoCard",
                 title: "The Ergative",
+                content:`
+                <p> In all sentences so far the subject of a transitive verb has been animate. But what happens when the subject is inanimate? How can we tell what happens?</p>
+                <p> For this special case (an inanimate subject of a transitive verb) Tvaali has a noun case. This is the <strong>ergative</strong> case, typically marked with -oo or -oot. </p>
+                <p> This is the reason we look at the difference between transitive and intransitive verbs! </p>
+                <p> Let's see this is action. </p>
+                `
+            },
+            {
+                type: "translation",
+                title: "The Ergative Case",
+                description: "Translate the following Tvaali sentences.",
+                newWords: ["tarkaa", "araantho", "tsiipli"],
+                questions: [
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ERG(nouns.stone, "plural") + " " + ACC(nouns.earth, "plural") + " " + V(verbs.hit, nouns.stone.class, "3rd", "plural", "perfective present"), 
+                        english: "the stone hits the earth"
+                    },
+                    {
+                        lessonId: 1,
+                        type: "tv_to_en",
+                        tvaali: ERG(nouns.snow, "plural") + " " + ACC(nouns.grass, "plural") + " " + V(verbs.hit, nouns.snow.class, "3rd", "plural", "perfective present"),
+                        english: ["the snow hits the grass", "snow hits the grass"]
+                    },
+                ]
+            },
+        ]},
+        // --- Sublesson 6 ---
+        {title: "Final Practice", modules: [
+            {
+                type: "infoCard",
+                title: "Final Practice",
                 content:`
                 <p> In all sentences so far the subject has been animate. But what happens when the subject of a transitive verb is inanimate and the object is animate? How can we tell what happens?</p>
                 <p> For this special case (an inanimate subject of a transitive verb) Tvaali has a noun case. This is the <strong>ergative</strong> case, typically marked with -oo or -oot. </p>

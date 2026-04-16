@@ -1,10 +1,7 @@
-check tvaali to english hover (remove the first and last vowel in root search)
-oroam is incorrect, so getAccusative does not work as intended
-start of lesson info card fix
+Explain long vowel in accusative
 declension table
 verb declension and total structure map
-more complete lesson structure
-progress bars
+
 
 script learner based on arabic
 
@@ -20,11 +17,11 @@ multiple language compatible
 All features
 Nouns:
 
-Gender (animate inanimate abstract)
+Gender (animate✓ inanimate✓ abstract)
 
-Case (nominative ergative accusative dative genitive locative transportative directive ablative instrumentative comitative) with split ergativity
+Case (nominative✓ ergative✓ accusative✓ dative genitive locative transportative directive ablative instrumentative comitative) with split ergativity
 
-Number (singular, dual, paucal, plural)
+Number (singular✓, dual, paucal, plural)
 
 Pronouns (1st inclusive and exclusive, 2nd formal and informal, 3rd animate, inanimate, abstract, indefinite animate and inanimate)
 
@@ -48,7 +45,7 @@ Adjectives (verb-like and noun-like)
 
 Verbs:
 
-Subject marking (1st inclusive and exclusive, 2nd formal and informal, 3rd animate, inanimate, abstract, indefinite animate and inanimate)
+Subject marking (1st inclusive✓ and exclusive, 2nd formal and informal, 3rd animate✓, inanimate✓, abstract, indefinite animate and inanimate)
 
 Passive
 

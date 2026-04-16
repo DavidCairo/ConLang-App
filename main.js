@@ -32,6 +32,9 @@ let seenWords = new Set();
 let isCorrect = false;
 let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
 let currentSubLessonIndex = 0; // Add this near 'currentModuleIndex'
+window.NOM = NOM;
+window.ACC = ACC;
+window.ERG = ERG;
 
 // Allow for shuffling of arrays
 function shuffleArray(array) {
@@ -140,7 +143,7 @@ function renderDictionary() {
 
                 <div id="verb-fields" class="sandbox-column">
                     <label>Verb Settings</label>
-                    <select id="test-person">
+                    <select id="test-person" onchange="updateNumberOptions()">
                         <option value="1st inclusive">1st inclusive</option>
                         <option value="1st exclusive">1st exclusive</option>
                         <option value="2nd formal">2nd formal</option>
@@ -151,6 +154,8 @@ function renderDictionary() {
                         <option value="indefinite animate">indefinite animate</option>
                         <option value="indefinite inanimate">indefinite inanimate</option>
                     </select>
+
+                    <select id="test-verb-number"></select>
 
                     <select id="test-aspect" onchange="filterTenses()">
                         <option value="perfective">Perfective</option>
@@ -167,33 +172,40 @@ function renderDictionary() {
                 <h2 id="sandbox-result">---</h2>
             </div>
         </div>
-
         <div class="dict-grid">
             <div class="card">
                 <h3>Nouns</h3>
                 <table class="dict-table">
-                    <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
-                    <tbody>
-                        ${Object.entries(nouns).map(([en, data]) => `
-                            <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
-                        `).join('')}
-                    </tbody>
+                <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
+                <tbody>
+
+                ${Object.entries(nouns).map(([en, data]) => `
+
+                <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
+
+                `).join('')}
+
+                </tbody>
                 </table>
             </div>
 
             <div class="card">
                 <h3>Verbs</h3>
                 <table class="dict-table">
-                    <thead><tr><th>English</th><th>Stem</th><th>Trans.</th></tr></thead>
-                    <tbody>
-                        ${Object.entries(verbs).map(([en, data]) => `
-                            <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Y" : "N"}</td></tr>
-                        `).join('')}
-                    </tbody>
+                <thead><tr><th>English</th><th>Stem</th><th>Trans.</th></tr></thead>
+                <tbody>
+
+                ${Object.entries(verbs).map(([en, data]) => `
+
+                <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Y" : "N"}</td></tr>
+
+                `).join('')}
+
+                </tbody>
                 </table>
             </div>
         </div>
-    `;
+        `;
 
     app.innerHTML = html;
     
@@ -278,62 +290,79 @@ window.onclick = function(event) {
     }
 };
 
+// This creates a "Master Lookup" for every possible form
+function generateMorphologyMap() {
+    const lookup = {};
+
+    // Map Nouns
+    Object.entries(nouns).forEach(([en, data]) => {
+        const numbers = ["singular", "dual", "paucal", "plural"];
+        const cases = ["NOM", "ACC", "ERG"];
+        
+        // Add the root itself
+        lookup[data.root.toLowerCase()] = { en, type: 'noun', data };
+
+        cases.forEach(c => {
+            numbers.forEach(n => {
+                // Use your existing NOM/ACC/ERG functions
+                const form = window[c](data, n).toLowerCase();
+                lookup[form] = { en, type: 'noun', data };
+            });
+        });
+    });
+
+    // Map Verbs
+    Object.entries(verbs).forEach(([en, data]) => {
+        const people = ["1st inclusive", "1st exclusive", "2nd formal", "2nd informal", "3rd animate", "3rd inanimate"];
+        const numbers = ["singular", "dual", "paucal", "plural"];
+        const tenses = ["present perfective", "past perfective", "future perfective"]; // Add core tenses
+
+        people.forEach(p => {
+            const nClass = p.split(' ').pop();
+            numbers.forEach(num => {
+                tenses.forEach(t => {
+                    const form = verbConjugator.conjugate(data, nClass, p, num, t).toLowerCase();
+                    lookup[form] = { en, type: 'verb', data };
+                });
+            });
+        });
+    });
+
+    return lookup;
+}
+
+const tvaaliLookup = generateMorphologyMap();
+
 // Hover over word to show translation
 function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     if (!sentence) return "";
-    const text = Array.isArray(sentence) ? sentence[0] : sentence;
-    const words = text.split(" ");
+    const words = (Array.isArray(sentence) ? sentence[0] : sentence).split(" ");
     
     return words.map(word => {
-        const cleanWord = word.toLowerCase().replace(/[.,!?;]/g, "");
-        const particles = ["the", "a", "an", "is", "are", "he", "she", "it", "they", "we", "you", "i"];
-        if (particles.includes(cleanWord)) return word;
+        const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, "");
+        if (["the", "is", "a", "an"].includes(cleanWord)) return word;
 
         let info = "";
 
-        // 1. TRANSLATION LOGIC
         if (isTvaali) {
-            const nounMatch = Object.entries(nouns).find(([k, v]) => cleanWord.includes(v.root.toLowerCase()));
-            const verbMatch = Object.entries(verbs).find(([k, v]) => cleanWord.includes(v.stem.toLowerCase()));
-            if (nounMatch) info = `En: ${nounMatch[0]} | Class: ${nounMatch[1].class}`;
-            else if (verbMatch) info = `En: ${verbMatch[0]} | Verb Stem`;
-        } else {
-            // 1. Check Nouns: Does the word contain the noun key?
-            const nounKey = Object.keys(nouns).find(key => {
-                const k = key.toLowerCase();
-                return cleanWord === k || cleanWord.startsWith(k) || (cleanWord.endsWith('s') && cleanWord.slice(0, -1) === k);
-            });
-
-            // 2. Check Verbs: Does the word contain the verb key (e.g., "sees" contains "see")?
-            const verbKey = Object.keys(verbs).find(key => 
-                cleanWord === key.toLowerCase() || 
-                cleanWord.includes(key.toLowerCase()) // This catches "sees", "seeing", "saw" (if root is in there)
-            );
-
-            if (nounKey) {
-                info = `Tv: ${nouns[nounKey].root} | Class: ${nouns[nounKey].class}`;
-            } else if (verbKey) {
-                info = `Tv: ${verbs[verbKey].stem}`;
+            // Check the pre-computed map for the conjugated form
+            const match = tvaaliLookup[cleanWord];
+            if (match) {
+                info = (match.type === 'noun') 
+                    ? `En: ${match.en} | Class: ${match.data.class}`
+                    : `En: ${match.en} | Verb Stem: ${match.data.stem}`;
             }
-        }
-
-        // 2. HIGHLIGHT LOGIC (Now with Fuzzy Matching)
-        let highlightClass = "";
-        
-        // We check if the cleanWord matches OR starts with any of our new words
-        const isNewInLesson = newWordsList.some(nw => {
-            const cleanNW = nw.toLowerCase();
-            return cleanWord === cleanNW || 
-                   cleanWord.startsWith(cleanNW) || 
-                   (isTvaali && cleanWord.includes(cleanNW));
-        });
-
-        if (isNewInLesson && !seenWords.has(cleanWord)) {
-            highlightClass = "new-word-highlight";
+        } else {
+            // English lookup remains the same
+            const nounKey = Object.keys(nouns).find(k => cleanWord === k.toLowerCase());
+            const verbKey = Object.keys(verbs).find(k => cleanWord.includes(k.toLowerCase()));
+            if (nounKey) info = `Tv: ${nouns[nounKey].root}`;
+            else if (verbKey) info = `Tv: ${verbs[verbKey].stem}`;
         }
 
         if (info) {
-            return `<span class="word-tooltip ${highlightClass}">${word}<span class="tooltip-text">${info}</span></span>`;
+            const highlight = (newWordsList || []).some(nw => cleanWord.includes(nw.toLowerCase())) ? "new-word-highlight" : "";
+            return `<span class="word-tooltip ${highlight}">${word}<span class="tooltip-text">${info}</span></span>`;
         }
         return word; 
     }).join(" ");

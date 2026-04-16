@@ -1,27 +1,42 @@
 window.updateNumberOptions = function() {
+    const type = document.getElementById('test-type').value;
     const inputElement = document.getElementById('test-input');
-    const numberSelect = document.getElementById('test-number');
-    const caseSelect = document.getElementById('test-case');
+    
+    // Select the correct dropdown based on the mode
+    const numberSelect = (type === 'noun') 
+        ? document.getElementById('test-number') 
+        : document.getElementById('test-verb-number');
     
     if (!inputElement || !numberSelect) return;
 
     const input = inputElement.value.trim().toLowerCase();
+
+    // VERB LOGIC
+    if (type === 'verb') {
+        // Standard Tvaali verbal number markers
+        numberSelect.innerHTML = `
+            <option value="singular">Singular</option>
+            <option value="dual">Dual</option>
+            <option value="paucal">Paucal</option>
+            <option value="plural">Plural</option>`;
+        return;
+    }
+
+    // NOUN LOGIC (Existing)
     const noun = nouns[input];
+    const caseSelect = document.getElementById('test-case');
     const currentCase = caseSelect ? caseSelect.value : "NOM";
 
-    // 1. If Case is "ROOT", force only Singular (since Root doesn't change)
     if (currentCase === "ROOT") {
         numberSelect.innerHTML = '<option value="singular">N/A (Root)</option>';
         return;
     }
 
-    // If word not found, default to singular
     if (!noun) {
         numberSelect.innerHTML = '<option value="singular">Singular</option>';
         return;
     }
 
-    // Logic based on Noun Class
     if (noun.class === "animate") {
         numberSelect.innerHTML = `
             <option value="singular">Singular</option>
@@ -49,27 +64,16 @@ window.runSandboxTest = function() {
 
     if (type === 'noun') {
         const nounObj = nouns[input];
-        if (!nounObj) {
-            resultDisplay.innerText = `"${input}" not found in nouns.`;
-            return;
-        }
+        if (!nounObj) return resultDisplay.innerText = `"${input}" not found in nouns.`;
 
         const caseType = document.getElementById('test-case').value;
         const num = document.getElementById('test-number').value;
 
-        // Logic check
         let result = "";
-        if (caseType === "ROOT") {
-            // Just the root, no grammar applied
-            result = nounObj.root; 
-        } else if (caseType === "NOM") {
-            // Use your new Nominative generator with number support
-            result = NOM(nounObj, num); 
-        } else if (caseType === "ACC") {
-            result = ACC(nounObj, num); 
-        } else if (caseType === "ERG") {
-            result = ERG(nounObj, num); 
-        }
+        if (caseType === "ROOT") result = nounObj.root; 
+        else if (caseType === "NOM") result = NOM(nounObj, num); 
+        else if (caseType === "ACC") result = ACC(nounObj, num); 
+        else if (caseType === "ERG") result = ERG(nounObj, num); 
         
         resultDisplay.innerText = result;
     } 
@@ -78,16 +82,15 @@ window.runSandboxTest = function() {
         if (!verbObj) return resultDisplay.innerText = `Verb "${input}" not found!`;
 
         const person = document.getElementById('test-person').value;
+        const num = document.getElementById('test-verb-number').value; // Get number from verb selector
         const aspect = document.getElementById('test-aspect').value;
         const tenseBase = document.getElementById('test-tense').value;
         
-        // Construct the full tense string: e.g., "future perfective"
         const fullTense = `${tenseBase} ${aspect}`;
-
-        // Pass the specific class from the person selection (e.g., "3rd animate" -> "animate")
         const nClass = person.split(' ').pop(); 
 
-        resultDisplay.innerText = V(verbObj, nClass, person, "singular", fullTense);
+        // Pass 'num' into the verb function instead of hardcoded "singular"
+        resultDisplay.innerText = V(verbObj, nClass, person, num, fullTense);
     }
 };
 

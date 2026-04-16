@@ -1,86 +1,80 @@
 const verbConjugator = {
     // Vowel Matrix
     vowelMatrix: {
-        'a':  { 'a':'a',  'i':'ai', 'e':'a',  'u':'a',  'o':'oi', 'y':'y', 'aa':'aa', 'ii':'ai', 'ee':'ee', 'uu':'uu', 'oo':'oi' },
-        'i':  { 'a':'ia', 'i':'i',  'e':'ie', 'u':'iu', 'o':'io', 'y':'y', 'aa':'iaa', 'ii':'ii', 'ee':'iee', 'uu':'iuu', 'oo':'ioo' },
-        'e':  { 'a':'a',  'i':'i',  'e':'e',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
-        'u':  { 'a':'a',  'i':'i',  'e':'u',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
-        'o':  { 'a':'a',  'i':'o',  'e':'o',  'u':'o',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
-        'y':  { 'a':'y',  'i':'y',  'e':'y',  'u':'y',  'o':'y',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'y',  'uu':'uu', 'oo':'oo' },
-        'aa': { 'a':'aa', 'i':'ai', 'e':'aa', 'u':'aa', 'o':'aa', 'y':'aa','aa':'aa', 'ii':'ai', 'ee':'aa', 'uu':'aa', 'oo':'aa' },
-        'ii': { 'a':'iaa','i':'ii', 'e':'iee','u':'iuu','o':'ioo','y':'ii','aa':'iaa', 'ii':'ii', 'ee':'iee', 'uu':'iuu', 'oo':'ioo' },
-        'ee': { 'a':'ee', 'i':'ee', 'e':'ee', 'u':'ee', 'o':'ee', 'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo' },
-        'uu': { 'a':'uu', 'i':'ii', 'e':'uu', 'u':'uu', 'o':'oo', 'y':'uu','aa':'aa', 'ii':'ii', 'ee':'uu', 'uu':'uu', 'oo':'oo' },
-        'oo': { 'a':'oo', 'i':'oi', 'e':'oo', 'u':'oo', 'o':'oo', 'y':'oo','aa':'aa', 'ii':'oi', 'ee':'oo', 'uu':'oo', 'oo':'oo' }
-    },
-
-    combineVowels: function(v1, v2, precedingText = "") {
-    let result = this.vowelMatrix[v1]?.[v2] || v1;
-
-    // 1. Identify the immediately preceding consonant
-    const lastChar = precedingText.slice(-1).toLowerCase();
-    // 2. Identify the cluster (the last two characters)
-    const cluster = precedingText.slice(-2).toLowerCase();
-
-    const glidables = ['t', 'd', 'k', 's', 'r'];
-    const forbiddenClusters = ['tr', 'pr', 'kr', 'ts'];
-
-    // Check if we should apply the glide
-    if (glidables.includes(lastChar)) {
-        // BLOCKED: If the cluster is in our forbidden list, do NOT glide
-        if (forbiddenClusters.includes(cluster)) {
-            // Keep the 'i' version (the first option in your table)
-            // No changes needed to 'result' as the matrix defaults to 'i'
-        } 
-        // ALLOWED: Apply the glide
-        else if (result.startsWith('i') && result.length > 1) {
-            result = 'j' + result.slice(1);
-        }
-    }
-    
-    return result;
+    'a':  { 'a':'a',  'i':'ai', 'e':'a',  'u':'a',  'o':'ao', 'y':'y', 'aa':'aa', 'ii':'ai', 'ee':'ee', 'uu':'uu', 'oo':'oi', 'ai':'ai', 'oi':'aoi' },
+    'i':  { 'a':'a/ja', 'i':'i',  'e':'e/je', 'u':'i/ju', 'o':'o/jo', 'y':'y', 'aa':'aa/jaa', 'ii':'ii', 'ee':'ee/jee', 'uu':'uu/juu', 'oo':'oo/joo', 'ai':'ai/jai', 'oi':'oi/joi' },
+    'e':  { 'a':'a',  'i':'i',  'e':'e',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'u':  { 'a':'a',  'i':'i',  'e':'u',  'u':'u',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'o':  { 'a':'a',  'i':'o',  'e':'o',  'u':'o',  'o':'o',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'y':  { 'a':'y',  'i':'y',  'e':'y',  'u':'y',  'o':'y',  'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'y',  'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'aa': { 'a':'aa', 'i':'ai', 'e':'aa', 'u':'aa', 'o':'aa', 'y':'aa','aa':'aa', 'ii':'ai', 'ee':'aa', 'uu':'aa', 'oo':'aa', 'ai':'ai', 'oi':'oi' },
+    'ii': { 'a':'ii/jaa','i':'ii', 'e':'ii/jee','u':'ii/juu','o':'ii/joo','y':'ii','aa':'aa/jaa', 'ii':'ii', 'ee':'ee/jee', 'uu':'uu/juu', 'oo':'oo/joo', 'ai':'ai/jai', 'oi':'oi/joi' },
+    'ee': { 'a':'ee', 'i':'ee', 'e':'ee', 'u':'ee', 'o':'ee', 'y':'y', 'aa':'aa', 'ii':'ii', 'ee':'ee', 'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'uu': { 'a':'uu', 'i':'ii', 'e':'uu', 'u':'uu', 'o':'oo', 'y':'uu','aa':'aa', 'ii':'ii', 'ee':'uu', 'uu':'uu', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'oo': { 'a':'oo', 'i':'oi', 'e':'oo', 'u':'oo', 'o':'oo', 'y':'oo','aa':'aa', 'ii':'oi', 'ee':'oo', 'uu':'oo', 'oo':'oo', 'ai':'ai', 'oi':'oi' },
+    'ai': { 'a':'ai', 'i':'ai', 'e':'ai', 'u':'ai', 'o':'ai', 'y':'ai', 'aa':'ai', 'ii':'ai', 'ee':'ai', 'uu':'ao/joo', 'oo':'ai', 'ai':'ai', 'oi':'oi' },
+    'oi': { 'a':'oi', 'i':'oi', 'e':'oi', 'u':'oi', 'o':'oi', 'y':'oi', 'aa':'oi', 'ii':'oi', 'ee':'oi', 'uu':'oi', 'oo':'oi', 'ai':'ai', 'oi':'oi' }
 },
 
-    // Helper to get full vowel at start or end (handles long vowels like 'aa')
     getVowelCluster: function(text, fromStart = true) {
+        if (!text) return "";
         const vowels = "aeiouy";
+        
         if (fromStart) {
-            let v = text[0];
-            if (vowels.includes(text[1]) && text[1] === v) return v + v;
-            return v;
+            let first = text[0];
+            let second = text[1];
+            // Check for diphthongs or identical pairs
+            if (second && vowels.includes(second)) {
+                if (second === first || (first === 'a' && second === 'i') || (first === 'o' && second === 'i')) {
+                    return first + second;
+                }
+            }
+            return first;
         } else {
-            let v = text.slice(-1);
-            let p = text.slice(-2, -1);
-            if (vowels.includes(p) && p === v) return v + v;
-            return v;
+            let last = text.slice(-1);
+            let penult = text.slice(-2, -1);
+            // Check for diphthongs or identical pairs
+            if (penult && vowels.includes(penult)) {
+                if (penult === last || (penult === 'a' && last === 'i') || (penult === 'o' && last === 'i')) {
+                    return penult + last;
+                }
+            }
+            return last;
         }
     },
 
-    // Check starting letter 
-    getStartType: function(stem) {
-        const first = stem[0];
-        const second = stem[1];
-        const vowels = "aeiou";
+    // Helper to get full vowel at start or end (handles long vowels like 'aa')
+    combineVowels: function(v1, v2, precedingText = "") {
+        let result = this.vowelMatrix[v1]?.[v2] || v1;
 
-        if (vowels.includes(first)) {
-            return (first === second) ? "long_vowel" : "vowel";
-        }
-        return "consonant";
-    },
+        // 1. Handle the "Slash" results (a/ja, ii/jaa, etc.)
+        if (result.includes('/')) {
+            const parts = result.split('/');
+            const lastChar = precedingText.slice(-1).toLowerCase();
+            const cluster = precedingText.slice(-2).toLowerCase();
+            
+            const glidables = ['t', 'd', 'k', 's', 'r'];
+            const forbiddenClusters = ['tr', 'pr', 'kr', 'ts'];
 
-    // 1. Helper to determine vowel weight
-    isHeavy: function(char1, char2) {
-        if (!char1) return false;
-        const heavySingles = "aoi";
-        // If char2 is provided, check for long vowels/diphthongs
-        if (char2) {
-            const pair = char1 + char2;
-            if ((char1 === char2 && "aeiou".includes(char1)) || (pair === "ai" || pair === "oi")) {
-                return true;
+            if (glidables.includes(lastChar) && !forbiddenClusters.includes(cluster)) {
+                result = parts[1]; // Use glide version (ja, jaa, jai, etc.)
+            } else {
+                result = parts[0]; // Use vowel version (a, aa, ai, etc.)
             }
         }
-        // If it's a single vowel, check if it's in the heavy list
-        return heavySingles.includes(char1);
+
+        // 2. COLLAPSE LOGIC: Prevent triple-length or redundant clusters
+        // Ensures aai -> ai, jaai -> jai, ooi -> oi, etc.
+        if (precedingText.endsWith('a') && result === 'ai') return 'i'; // a + ai -> ai
+        if (precedingText.endsWith('o') && result === 'oi') return 'i'; // o + oi -> oi
+        
+        // Specifically handle the "jaa" result from the table to ensure it becomes "jai" if needed
+        if (v2 === 'ii' || v2 === 'i') {
+            if (result === 'jaa') result = 'jai';
+            if (result === 'aa') result = 'ai';
+        }
+
+        return result;
     },
 
     // 1. Prefix pronoun
@@ -88,7 +82,7 @@ const verbConjugator = {
         const cleanPerson = person.split(" ")[0];
 
         if (cleanPerson === "1st") {
-            if (vClass === "inc") {
+            if (vClass === "inclusive") {
                 if (number === "singular") return "";
                 if (number === "dual") return "iis";
                 if (number === "paucal") return "iitaa";

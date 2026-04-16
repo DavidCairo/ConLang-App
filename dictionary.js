@@ -3,9 +3,13 @@ const nouns={
     woman:  {root:"sidhi", class:"animate" },
     man:    {root: "oroo", class: "animate"},
     fire:   {root: "aahvuu", class: "animate" },
-    bird:  {root:"djaavuum",class:"animate"},
+    bird:   {root:"djaavuum",class:"animate"},
     cat:    {root:"rjiimai",class:"animate"},
     name:   {root:"naama",class:"animate"},
+    animal: {root: "tospee", class:"animate"},
+    cattle: {root: "nurjo", class:"animate"},
+    child:  {root:"sevaan", class: "animate"},
+
 
     // Inanimate
     water:  {root: "aaloo", class: "inanimate" },
