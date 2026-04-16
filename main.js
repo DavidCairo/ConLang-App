@@ -520,6 +520,9 @@ function renderLesson() {
         case "translation":
             renderTranslationModule(module);
             break;
+        case "multipleChoice":
+            renderMultipleChoice(module);
+            break;
         default:
             console.error("Unknown module type:", module.type);
     }
@@ -760,6 +763,73 @@ function renderTranslationModule(module) {
     document.getElementById('next-btn').onclick = () => handleModuleProgress(module);
 }
 
+// --- MULTIPLE CHOICE MODULE ---
+function renderMultipleChoice(module) {
+    const app = document.getElementById('app');
+    
+    // Initialize steps
+    if (currentSubStep === 0 && !module.shuffled) {
+        module.activeQuestions = shuffleArray([...module.questions]);
+        module.shuffled = true;
+    }
+
+    const q = module.activeQuestions[currentSubStep];
+    const isEnToTv = q.type === "en_to_tv";
+    const prompt = isEnToTv ? q.en : q.tv;
+    const correctAns = isEnToTv ? q.tv : q.en;
+
+    // Generate distractors
+    const allTvaaliRoots = Object.values(nouns).map(n => n.root).concat(Object.values(verbs).map(v => v.stem));
+    const allEnglishTerms = Object.keys(nouns).concat(Object.keys(verbs));
+    
+    const pool = isEnToTv ? allTvaaliRoots : allEnglishTerms;
+    
+    // Filter out the correct answer from the random pool
+    let distractors = pool
+        .filter(item => item.toLowerCase() !== correctAns.toLowerCase())
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 2);
+
+    // Combine and shuffle the 3 options
+    const choices = shuffleArray([correctAns, ...distractors]);
+
+    const relevantNewWords = module.newWords || activeLesson.newWords || [];
+    const wrappedPrompt = wrapWords(prompt, !isEnToTv, relevantNewWords);
+
+    app.innerHTML = `
+        <h1>${module.title}</h1>
+        <div class="card">
+            <p>${isEnToTv ? "Select the Tvaali translation:" : "Select the English translation:"}</p>
+            <h2 class="large-tv">${wrappedPrompt}</h2>
+            
+            <div class="mcq-container">
+                ${choices.map(choice => `
+                    <button class="primary-btn mcq-btn" 
+                            onclick="checkMCQ('${choice.replace(/'/g, "\\'")}', '${correctAns.replace(/'/g, "\\'")}', this)">
+                        ${choice}
+                    </button>
+                `).join('')}
+            </div>
+            <p id="feedback"></p>
+        </div>
+    `;
+}
+
+window.checkMCQ = function(choice, correct, btn) {
+    const module = activeLesson.currentSubModules[currentModuleIndex];
+    const feedback = document.getElementById('feedback');
+    
+    if (choice.toLowerCase() === correct.toLowerCase()) {
+        btn.style.backgroundColor = "#4CAF50"; // Green success
+        showSuccessAndContinue(module);
+    } else {
+        btn.style.backgroundColor = "#f44336"; // Red error
+        feedback.innerText = "Not quite! Try another one.";
+        feedback.style.color = "red";
+        setTimeout(() => btn.style.backgroundColor = "", 1000);
+    }
+};
+
 // Module progress
 window.handleModuleProgress = function(module) {
     isCorrect = false;
@@ -772,7 +842,9 @@ window.handleModuleProgress = function(module) {
     } else if (module.groups) {
         totalSteps = [...module.groups.Animate, ...module.groups.Inanimate].length;
     } else if (module.words) {
-        totalSteps = module.words.length;
+        totalSteps = module.words.length;       
+    } else if (module.activeQuestions) { // Add this check
+        totalSteps = module.activeQuestions.length;
     } else {
         totalSteps = 1; 
     }

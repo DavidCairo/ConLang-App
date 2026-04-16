@@ -11,7 +11,7 @@ const lesson1Data = {
     id: 1,
     title: "The basics",
     description: "In this first chapter of lessons, we learn about nouns and verbs, the Subject-Object-Verb structure, noun classes, and the start of the Ergative-Accusative system.",
-    // newWords: ["sidhi", "aaloo", "aim", "iilha", "roshuu", "nedhaan", "djaavuum", "rjiimai", "oroo", "aahvuu", "irni", "nimiir", "naama", "tarkaa", "araantho", "tsiipli"],
+    newWords: ["sidhi", "aaloo", "aim", "iilha", "roshuu", "nedhaan", "djaavuum", "rjiimai", "oroo", "aahvuu", "irni", "nimiir", "naama", "tarkaa", "araantho", "tsiipli"],
     
     subLessons: [
         {title: "Nouns and Animacy", modules: [
@@ -104,19 +104,19 @@ const lesson1Data = {
                     <p>Since we will be learning Tvaali from english, we will also need to translate words the other direction. Let's do that with the 9 basic words we have seen so far!</p>`,
             },
             {
-                type: "vocabDrill",
-                title: "The Other Way",
-                description: "Translate these words into Tvaali",
+                type: "multipleChoice", 
+                title: "Recognition",
+                description: "Select the correct Tvaali translation for each word.",
                 questions: [
-                    {en: "man", tv: ROOT("man"), type: "en_to_tv"},
-                    { tv: ROOT("sun"), en: "sun", type: "en_to_tv" },
-                    { tv: ROOT("cat"), en: "cat", type: "en_to_tv" },
-                    { tv: ROOT("grass"), en: "grass", type: "en_to_tv"},
-                    { tv: ROOT("name"), en: "name", type: "en_to_tv"},
-                    { tv: ROOT("fire"), en: "fire", type: "en_to_tv" },
-                    { tv: ROOT("bird"), en: "bird", type: "en_to_tv" },
-                    { tv: ROOT("water"), en: "water", type: "en_to_tv" },
-                    { tv: ROOT("woman"), en: "woman", type: "en_to_tv" },
+                    { en: "man", tv: ROOT("man"), type: "en_to_tv" },
+                    { en: "sun", tv: ROOT("sun"), type: "en_to_tv" },
+                    { en: "cat", tv: ROOT("cat"), type: "en_to_tv" },
+                    { en: "grass", tv: ROOT("grass"), type: "en_to_tv" },
+                    { en: "name", tv: ROOT("name"), type: "en_to_tv" },
+                    { en: "fire", tv: ROOT("fire"), type: "en_to_tv" },
+                    { en: "bird", tv: ROOT("bird"), type: "en_to_tv" },
+                    { en: "water", tv: ROOT("water"), type: "en_to_tv" },
+                    { en: "woman", tv: ROOT("woman"), type: "en_to_tv" },
                 ]
             },
         ]},

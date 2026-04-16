@@ -91,6 +91,21 @@ button:active { transform: scale(0.98); }
 .primary-btn:hover { transform: scale(1.05); }
 .dict-btn { background-color: var(--primary-teal); }
 
+.mcq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.mcq-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    transition: background-color 0.2s;
+}
+
 /* ==========================================================================
    4. NAVIGATION & LESSON MAP
    ========================================================================== */
