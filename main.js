@@ -35,6 +35,14 @@ let currentSubLessonIndex = 0; // Add this near 'currentModuleIndex'
 window.NOM = NOM;
 window.ACC = ACC;
 window.ERG = ERG;
+window.DAT = DAT;
+window.GEN = GEN;
+window.LOC = LOC;
+// window.TRA = TRA;
+// window.DIR = DIR;
+// window.ABL = ABL;
+// window.INS = INS;
+// window.COM = COM;
 
 // Allow for shuffling of arrays
 function shuffleArray(array) {
@@ -52,7 +60,8 @@ function renderHome() {
     
     let html = `
         <div class="nav-container">
-            <button class="dict-btn" onclick="renderDictionary()">📖 Dictionary</button>
+            <button class="primary-btn" onclick="renderDictionary()">📖 Dictionary</button>
+            <button class="primary-btn" onclick="renderReference()">📚 Grammar Tables</button>
         </div>
         <h1>Tvaali Course</h1>
     `;
@@ -113,7 +122,7 @@ function renderDictionary() {
     
     let html = `
         <div class="nav-container">
-            <button class="dict-btn" onclick="renderHome()">⬅ Back to Lessons</button>
+            <button class="primary-btn" onclick="renderHome()">⬅ Back to Lessons</button>
         </div>
         <h1>Tvaali Dictionary</h1>
 
@@ -214,6 +223,82 @@ function renderDictionary() {
     filterTenses();
 }
 
+function renderReference() {
+    const app = document.getElementById('app');
+    
+    let html = `
+        <div class="nav-container">
+            <button class="primary-btn" onclick="renderHome()">⬅ Back to Lessons</button>
+        </div>
+        <h1>Grammar Reference</h1>
+
+        <div class="card">
+            <h3>Morphology Tables</h3>
+            <p>Search for a word to see its full declension or conjugation patterns.</p>
+            <input type="text" id="ref-search" oninput="updateRefSearch()" placeholder="Search English or Tvaali root...">
+            
+            <div id="ref-search-results" class="ref-search-grid">
+                </div>
+        </div>
+
+        <div id="ref-display-area">
+            </div>
+    `;
+
+    app.innerHTML = html;
+    updateRefSearch(); // Initial populate
+}
+
+window.updateRefSearch = function() {
+    const term = document.getElementById('ref-search').value.toLowerCase();
+    const resultsDiv = document.getElementById('ref-search-results');
+    
+    // Combine nouns and verbs into one searchable list
+    const combined = [
+        ...Object.entries(nouns).map(([en, data]) => ({ en, root: data.root, type: 'noun', class: data.class })),
+        ...Object.entries(verbs).map(([en, data]) => ({ en, root: data.stem, type: 'verb' }))
+    ].filter(item => item.en.toLowerCase().includes(term) || item.root.toLowerCase().includes(term));
+
+    resultsDiv.innerHTML = combined.map(item => `
+        <div class="ref-item" onclick="${item.type === 'noun' ? `showNounTable('${item.en}')` : `showVerbTable('${item.en}')`}">
+            <strong>${item.en}</strong> (${item.root})
+            <span class="tag">${item.type}</span>
+        </div>
+    `).join('');
+};
+
+window.showNounTable = function(enKey) {
+    const data = nouns[enKey];
+    const display = document.getElementById('ref-display-area');
+    const numbers = ["singular", "dual", "paucal", "plural"];
+    const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC"];
+
+    let tableHtml = `
+        <div class="card fade-in">
+            <h2>Noun Declension: ${enKey} (${data.root})</h2>
+            <p>Class: <strong>${data.class}</strong></p>
+            <table class="grammar-table">
+                <thead>
+                    <tr>
+                        <th>Case</th>
+                        ${numbers.map(n => `<th>${n.charAt(0).toUpperCase() + n.slice(1)}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cases.map(c => `
+                        <tr>
+                            <td><strong>${c}</strong></td>
+                            ${numbers.map(n => `<td>${window[c](data, n)}</td>`).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    display.innerHTML = tableHtml;
+    display.scrollIntoView({ behavior: 'smooth' });
+};
+
 // Function to show the info popup
 window.showInfo = function(lessonId) {
     const lesson = allLessons.find(l => l.id === lessonId);
@@ -297,7 +382,7 @@ function generateMorphologyMap() {
     // Map Nouns
     Object.entries(nouns).forEach(([en, data]) => {
         const numbers = ["singular", "dual", "paucal", "plural"];
-        const cases = ["NOM", "ACC", "ERG"];
+        const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC"];
         
         // Add the root itself
         lookup[data.root.toLowerCase()] = { en, type: 'noun', data };
@@ -767,7 +852,6 @@ function renderTranslationModule(module) {
 function renderMultipleChoice(module) {
     const app = document.getElementById('app');
     
-    // Initialize steps
     if (currentSubStep === 0 && !module.shuffled) {
         module.activeQuestions = shuffleArray([...module.questions]);
         module.shuffled = true;
@@ -775,23 +859,27 @@ function renderMultipleChoice(module) {
 
     const q = module.activeQuestions[currentSubStep];
     const isEnToTv = q.type === "en_to_tv";
-    const prompt = isEnToTv ? q.en : q.tv;
-    const correctAns = isEnToTv ? q.tv : q.en;
+    const prompt = isEnToTv ? (q.en || q.english) : (q.tv || q.tvaali);
+    const correctAns = isEnToTv ? (q.tv || q.tvaali) : (q.en || q.english);
 
-    // Generate distractors
-    const allTvaaliRoots = Object.values(nouns).map(n => n.root).concat(Object.values(verbs).map(v => v.stem));
-    const allEnglishTerms = Object.keys(nouns).concat(Object.keys(verbs));
-    
-    const pool = isEnToTv ? allTvaaliRoots : allEnglishTerms;
-    
-    // Filter out the correct answer from the random pool
-    let distractors = pool
-        .filter(item => item.toLowerCase() !== correctAns.toLowerCase())
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 2);
+    let finalChoices = [];
 
-    // Combine and shuffle the 3 options
-    const choices = shuffleArray([correctAns, ...distractors]);
+    // Check if you provided manual distractors in the lesson file
+    if (q.distractors && q.distractors.length > 0) {
+        finalChoices = shuffleArray([correctAns, ...q.distractors]);
+    } else {
+        // Fallback to random distractors
+        const allTvaaliRoots = Object.values(nouns).map(n => n.root).concat(Object.values(verbs).map(v => v.stem));
+        const allEnglishTerms = Object.keys(nouns).concat(Object.keys(verbs));
+        const pool = isEnToTv ? allTvaaliRoots : allEnglishTerms;
+        
+        let randomDistractors = pool
+            .filter(item => item && item.toLowerCase() !== correctAns.toLowerCase())
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 2);
+            
+        finalChoices = shuffleArray([correctAns, ...randomDistractors]);
+    }
 
     const relevantNewWords = module.newWords || activeLesson.newWords || [];
     const wrappedPrompt = wrapWords(prompt, !isEnToTv, relevantNewWords);
@@ -803,7 +891,7 @@ function renderMultipleChoice(module) {
             <h2 class="large-tv">${wrappedPrompt}</h2>
             
             <div class="mcq-container">
-                ${choices.map(choice => `
+                ${finalChoices.map(choice => `
                     <button class="primary-btn mcq-btn" 
                             onclick="checkMCQ('${choice.replace(/'/g, "\\'")}', '${correctAns.replace(/'/g, "\\'")}', this)">
                         ${choice}

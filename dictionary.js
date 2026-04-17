@@ -27,7 +27,10 @@ const verbs={
     sleep:  {stem: "iilha", trans: false },
     see:    {stem:"roshuu", trans:true},
     fall:   {stem:"liin", trans:false},
-    hit:   {stem:"tarkaa", trans:true},
+    hit:    {stem:"tarkaa", trans:true},
+    carve:  {stem:"baintras", trans:true},
+    eat:    {stem:"iihes", trans:true},
+    become: {stem:"taan", trans:true},
 };
 
 function ROOT(item) {
@@ -65,7 +68,7 @@ const ERG = (nounObj, number = "singular") => {
     // Split Ergative Logic:
     // If it's Animate, return the custom message instead of the root
     if (nounObj.class === "animate") {
-        return "This is an animate noun. These don't have an ergative case.";
+        return "N/A";
     }
 
     // For Inanimate and Abstract, proceed with the suffix logic
@@ -84,9 +87,21 @@ const ACC = (nounObj, number = "singular") => {
     }
     return nounObj.root; // Inanimates stay in Nominative as objects
 };
-// const DAT
-// const GEN
-// const LOC
+const DAT = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    return nounCaser.getDative(nounObj, number);
+};
+const GEN = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    return nounCaser.getGenitive(nounObj, number);
+};
+const LOC = (nounObj, number = "singular") => {
+    if (!nounObj || !nounObj.root) return "[Unknown]";
+
+    return nounCaser.getLocative(nounObj, number);
+};
 // const TRA
 // const DIR
 // const ABL

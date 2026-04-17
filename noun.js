@@ -1,274 +1,220 @@
 const nounCaser = {
-    // 1. Helper to get vowel clusters (Matches verb logic)
+    // === 1. CORE HELPERS (Internal use) ===
+    
+    // Shared logic for slicing stems and adding suffixes
+    // We moved the longVowel logic here so it's defined only once
+    _executeSuffix: function(root, suffix, endingType) {
+        if (!suffix) return root;
+        if (!suffix.startsWith("-")) return root + suffix;
+        
+        return root.slice(0, (endingType === "longVowel" ? -2 : -1)) + suffix.slice(1);
+    },
+
+    // Standard logic to pick the correct suffix from a table row based on Class/Number
+    _resolveFromTable: function(root, row, nClass, number, endingType) {
+        if (!row) {
+            console.warn("Missing suffix row for:", endingType);
+            return root;
+        }
+        if (nClass === "animate") {
+            const i = ["singular", "dual", "paucal", "plural"].indexOf(number);
+            return this._executeSuffix(root, row.anim[i], endingType);
+        }
+        if (nClass === "inanimate") {
+            const i = (number === "plural") ? 1 : 0;
+            return this._executeSuffix(root, row.inan[i], endingType);
+        }
+        if (nClass === "abstract") {
+            return this._executeSuffix(root, row.abs, endingType);
+        }
+        return root;
+    },
+
+    // === 2. LINGUISTIC UTILITIES ===
+
     getVowelCluster: function(text, fromStart = true) {
         const vowels = "aeiouy";
         if (fromStart) {
             let v = text[0];
-            if (vowels.includes(text[1]) && text[1] === v) return v + v;
-            return v;
+            return (vowels.includes(text[1]) && text[1] === v) ? v + v : v;
         } else {
-            let v = text.slice(-1);
-            let p = text.slice(-2, -1);
-            if (vowels.includes(p) && p === v) return v + v;
-            return v;
+            let v = text.slice(-1), p = text.slice(-2, -1);
+            return (vowels.includes(p) && p === v) ? v + v : v;
         }
     },
-    
-    // Find heavy vowels
-    isHeavy: function(char1, char2) {
-        if (!char1 || !char2) return false;
-        const pair = char1 + char2;
-        // Doubled vowels or diphthongs ai/oi are "Heavy"
-        return (char1 === char2 && "aeiou".includes(char1)) || 
-               (pair === "ai" || pair === "oi");
-    },
 
-    // apply suffix 
-    applySuffix: function(root, suffix) {
-        if (!suffix) return root;
-        const vowels = "aeiouy";
-        const rLastV = this.getVowelCluster(root, false);
-        const sFirstV = this.getVowelCluster(suffix, true);
-
-        // If both are vowels, use the central Matrix logic
-        if (vowels.includes(rLastV[0]) && vowels.includes(sFirstV[0])) {
-            const preceding = root.slice(0, -rLastV.length); 
-            // Call the shared logic from verbConjugator
-            const combined = verbConjugator.combineVowels(rLastV, sFirstV, preceding);
-            
-            return root.slice(0, -rLastV.length) + combined + suffix.slice(sFirstV.length);
-        }
-        
-        return root + suffix;
-    },
-
-    // Find word ending
     getEndingType: function(word) {
-        if (!word || typeof word !== 'string') return "consonant";
-        const vowels = "aeiouy";
-        const last = word.slice(-1).toLowerCase();
-        const penult = word.slice(-2, -1).toLowerCase();
-        
-        if (vowels.includes(last)) {
-            // It's a long vowel if penult is the same or it's a known diphthong (ai/oi)
-            if (last === penult || (penult === 'a' && last === 'i') || (penult === 'o' && last === 'i')) {
-                return "longVowel";
-            }
-            return "vowel";
-        }
-        return "consonant";
+        if (!word) return "consonant";
+        const vowels = "aeiouy", last = word.slice(-1), pen = word.slice(-2, -1);
+        if (!vowels.includes(last)) return "consonant";
+        return (last === pen || (pen === 'a' && last === 'i') || (pen === 'o' && last === 'i')) 
+            ? "longVowel" : "vowel";
     },
 
-    // The logic block for Nominative
+/* ==========================================================================
+    NOMINATIVE
+========================================================================== */
     getNominative: function(nounObj, number = "singular") {
-        if (!nounObj || !nounObj.root) {
-            console.error("getNominative received an invalid object:", nounObj);
-            return "ERROR"; 
-        }
-
-        const root = nounObj.root;
+        const { root, class: nClass } = nounObj;
         const ending = this.getEndingType(root);
-        const nClass = nounObj.class;
 
-        if (nClass === "animate") {
-            // --- SINGULAR ---
-            if (number === "singular") return root
-
-            // --- DUAL --- (as for consonants and short vowels, VVs for long vowels)
-            if (number === "dual") {
-                if (ending === "consonant") return root + "as";
-                if (ending === "longVowel") return root + "s";
-                if (ending === "vowel") return root.slice(0,-1) + "as";
-            }
-
-            // --- PAUCAL --- (at for consonants and short vowels, VVt for long vowels)
-            if (number === "paucal") {
-                if (ending === "consonant") return root + "at";
-                if (ending === "longVowel") return root + "t";
-                if (ending === "vowel") return root.slice(0,-1) + "at";
-            }
-
-            // --- PLURAL --- (ak for consonants and short vowels, VVk for long vowels)
-            if (number === "plural") {
-                if (ending === "consonant") return root + "ak";
-                if (ending === "longVowel") return root + "k";
-                if (ending === "vowel") return root.slice(0,-1) + "ak";
-            }
-        }
-
-        if (nClass === "inanimate") {
-            // --- SINGULAR ---
-            if (number === "singular") {
-                if (ending === "consonant") return root + "at";
-                if (ending === "longVowel") return root + "t";
-                if (ending === "vowel") return root.slice(0,-1) + "at";
-            }
-
-            // --- INDEFINITE ---
-            if (number === "plural") return root;
-        }
-
-        // Abstract return root for Nominative
-        return root; 
-    },
-
-    // The logic block for Accusative
-    getAccusative: function(nounObj, number = "singular") {
-        if (!nounObj || !nounObj.root) return "ERROR";
-
-        const root = nounObj.root;
-        const nClass = nounObj.class;
-        const endingType = this.getEndingType(root);
-        
-        // Animate are unmarked
-        if (nClass !== "animate") return root;
-
-        // Helper for consonant stems based on the s, r, k, t tables
-        const applyConsonantInfix = (marker, suffix) => {
-            const lastConsonant = root.slice(-1);
-            const stem = root.slice(0, -1);
-            // Based on the table: (s)ram -> marker + root_consonant + suffix
-            return stem + marker + lastConsonant + suffix;
+        const suffixes = {
+            animate: { anim: ["", "-as", "-at", "-ak"], inan: ["-at", ""], abs: "" },
+            longVowel: { anim: ["", "s", "t", "k"], inan: ["t", ""], abs: "" }
         };
 
-        if (number === "singular") {
-            const lastChar = root.slice(-1).toLowerCase();
-
-            // 1. Vowel stem "o" gets "am" with removed "o"
-            if (lastChar === 'o' && endingType !== "longVowel") {
-                return root.slice(0, -1) + "am";
-            }
-
-            // 2. Vowel stems a, i, e, u, y and long vowels get "m"
-            if (endingType === "longVowel" || ['a', 'i', 'e', 'u', 'y'].includes(lastChar)) {
-                return root + "m";
-            }
-
-            // 3. Consonant stems get "am"
-            return this.applySuffix(root, "am");
-        }
-
-        if (number === "dual") {
-            if (endingType === "consonant") {
-                const lastChar = root.slice(-1).toLowerCase();
-                
-                // n, m, s stems have no dual accusative (marked '-' in the table)
-                if (['n', 'm', 's'].includes(lastChar)) {
-                    return root; 
-                }
-                
-                // r, t, k stems use the s-infix: (s)ram, (s)tam, (s)kam
-                // Note: the suffix is "am" following the infix
-                return applyConsonantInfix("s", "am");
-            }
-
-            // All vowel stems get 'sa' suffix 
-            return this.applySuffix(root, "sa");
-        }
-
-        if (number === "paucal") {
-            if (endingType === "consonant") {
-                const last = root.slice(-1).toLowerCase();
-
-                if (last === 'n') return root + "tham";
-                if (last === 'm') return root + "dham";
-                if (last === 's') return root + "tam";
-                
-                // k stems use an 'r' infix: (r)kam
-                if (last === 'k') return applyConsonantInfix("r", "am"); 
-                
-                // r stems use a 't' infix: (t)ram
-                if (last === 'r') return applyConsonantInfix("t", "am");
-
-                // t stems get 'am' (replaces the 't')
-                if (last === 't') return root + "am";
-            }
-
-            // All vowel stems get 'ta' suffix 
-            return this.applySuffix(root, "ta");
-        }
-
-        if (number === "plural") {
-            if (endingType === "consonant") {
-                const last = root.slice(-1).toLowerCase();
-
-                // n, m, s stems get the full 'kam' suffix
-                if (['n', 'm', 's'].includes(last)) {
-                    return root + "kam";
-                }
-
-                // k stem gets just 'am' (replaces the 'k' or absorbs it)
-                if (last === 'k') {
-                    return root + "am";
-                }
-
-                // t stem gets an 'r' infix: (r)tam
-                if (last === 't') {
-                    return applyConsonantInfix("r", "am");
-                }
-
-                // r stem (and fallbacks) gets a 'k' infix: (k)ram
-                if (last === 'r') {
-                    return applyConsonantInfix("k", "am");
-                }
-            }
-
-            // All vowel stems get 'ka' suffix
-            return this.applySuffix(root, "ka");
-        }
-
-        return root;
+        // Pick the row based on vowel length
+        const row = (ending === "longVowel") ? suffixes.longVowel : suffixes.animate;
+        return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
-    // The logic block for Ergative
+/* ==========================================================================
+    ACCUSATIVE
+========================================================================== */
+    getAccusative: function(nounObj, number = "singular") {
+        const { root, class: nClass } = nounObj;
+        if (nClass !== "animate") return root; // Only Animate is marked
+
+        const ending = this.getEndingType(root);
+        const last = root.slice(-1).toLowerCase();
+
+        // Table for consonant infixes/suffixes
+        const conTable = {
+            'n': { sg: "am", du: "",    pau: "tham", pl: "kam" },
+            'm': { sg: "am", du: "",    pau: "dham", pl: "kam" },
+            's': { sg: "am", du: "",    pau: "tam",  pl: "kam" },
+            'r': { sg: "am", du: "s",   pau: "t",    pl: "k" }, 
+            'k': { sg: "am", du: "s",   pau: "r",    pl: "am" },
+            't': { sg: "am", du: "s",   pau: "am",   pl: "r" }
+        };
+
+        if (ending === "consonant") {
+            const row = conTable[last] || conTable['n'];
+            const keys = { singular: "sg", dual: "du", paucal: "pau", plural: "pl" };
+            const val = row[keys[number]];
+            
+            if (!val) return root; 
+            // Logic for infixes (s, t, k, r)
+            if (val.length === 1) return root.slice(0, -1) + val + last + "am";
+            // Logic for k/t stems that drop the consonant before 'am'
+            if (val === "am" && (last === 't' || last === 'k')) return root.slice(0, -1) + "am";
+            
+            return root + val;
+        }
+
+        // Vowel Logic using the shared helper
+        const vSuffix = { singular: (last === 'o' ? "-am" : "m"), dual: "sa", paucal: "ta", plural: "ka" };
+        return this._executeSuffix(root, vSuffix[number], ending);
+    },
+
+/* ==========================================================================
+    ERGATIVE
+========================================================================== */
     getErgative: function(nounObj, number = "singular") {
-        if (!nounObj || !nounObj.root) return "ERROR";
+        const { root, class: nClass } = nounObj;
+        const ending = this.getEndingType(root);
+        const last = root.slice(-1).toLowerCase();
 
-        const root = nounObj.root;
-        const nClass = nounObj.class;
-        const endingType = this.getEndingType(root);
-
-        // Animate Ergative is blank (-)
         if (nClass === "animate") return root;
 
-        // --- INANIMATE LOGIC ---
         if (nClass === "inanimate") {
             const suffix = (number === "singular") ? "oot" : "oo";
-            
-            if (endingType === "consonant") {
-                return root + suffix;
-            }
-            
-            // Vowel stem (long and short): remove vowel(s) and use suffix
-            const stemWithoutVowels = root.replace(/[aeiouy]+$/i, "");
-            return stemWithoutVowels + suffix;
+            return (ending === "consonant") ? root + suffix : root.replace(/[aeiouy]+$/i, "") + suffix;
         }
 
-        // --- ABSTRACT LOGIC ---
         if (nClass === "abstract") {
-            const last = root.slice(-1).toLowerCase();
-
-            if (endingType === "consonant") {
-                // 1. 'n' consonant stem: add oo
-                if (last === 'n') {
-                    return root + "oo";
-                }
-                
-                // 2. 'm', 'k', 't' stems: remove the consonant and add noo
-                if (['m', 'k', 't'].includes(last)) {
-                    return root.slice(0, -1) + "noo";
-                }
-                
-                // 3. 's', 'r' stems: just add noo
-                if (['s', 'r'].includes(last)) {
-                    return root + "noo";
-                }
-            }
-
-            // All vowel stems (short or long): just add noo
-            return root + "noo";
+            const rowMap = { n: "oo", m: "-noo", k: "-noo", t: "-noo", s: "noo", r: "noo" };
+            const suffix = (ending === "consonant") ? (rowMap[last] || "noo") : "noo";
+            return this._executeSuffix(root, suffix, ending);
         }
 
         return root;
     },
+
+/* ==========================================================================
+    DATIVE
+========================================================================== */
+    getDative: function(nounObj, number = "singular") {
+        const { root, class: nClass } = nounObj;
+        const ending = this.getEndingType(root);
+        const last = root.slice(-1).toLowerCase();
+
+        const suffixes = {
+            'n': { anim: ["tho", "thas", "that", "thak"], inan: ["that", "tho"], abs: "tho" },
+            'm': { anim: ["dho", "dhas", "dhat", "dhak"], inan: ["dhat", "dho"], abs: "ndho" },
+            's': { anim: ["tho", "thas", "that", "thak"], inan: ["that", "tho"], abs: "ntho" },
+            'r': { anim: ["tho", "sro", "tro", "kro"],    inan: ["tro", "thro"], abs: "ntro" },
+            'k': { anim: ["ro", "ros", "rot", "rok"],     inan: ["rot", "ro"],   abs: "ntho" },
+            't': { anim: ["o", "os", "ot", "ok"],         inan: ["ot", "oo"],    abs: "ntho" },
+            'vowel': { anim: ["tho", "thas", "that", "thak"], inan: ["that", "tho"], abs: "ntho" }
+        };
+
+        const row = ending.includes("vowel") ? suffixes.vowel : (suffixes[last] || suffixes.n);
+        return this._resolveFromTable(root, row, nClass, number, ending);
+    },
+/* ==========================================================================
+    GENITIVE
+========================================================================== */
+    getGenitive: function(nounObj, number = "singular") {
+        const { root, class: nClass } = nounObj;
+        const ending = this.getEndingType(root);
+        const last = root.slice(-1).toLowerCase();
+
+        const suffixes = {
+            'n': { anim: ["on", "os", "ot", "ok"], inan: ["ot", "on"], abs: "on" },
+            'm': { anim: ["on", "os", "ot", "ok"], inan: ["ot", "on"], abs: "-non" },
+            's': { anim: ["on", "os", "ot", "ok"], inan: ["ot", "on"], abs: "non" },
+            't': { anim: ["on", "-ntos", "-ntot", "-ntok"], inan: ["-ntot", "on"], abs: "-non" },
+            'vowel': { anim: ["-on", "-os", "-ot", "-ok"], inan: ["-ot", "-on"], abs: "non" },
+            'longVowel': { anim: ["no", "so", "to", "ko"], inan: ["to", "no"], abs: "non" },
+        };
+
+        const rowMap = { k: 'm', r: 's', t: 't' };
+        let row;
+        if (ending === "longVowel") row = suffixes.longVowel;
+        else if (ending === "vowel") row = suffixes.vowel;
+        else row = suffixes[rowMap[last] || 'n'];
+        return this._resolveFromTable(root, row, nClass, number, ending);
+    },
+    
+/* ==========================================================================
+    LOCATIVE
+========================================================================== */
+    getLocative: function(nounObj, number = "singular") {
+        const { root, class: nClass } = nounObj;
+        const ending = this.getEndingType(root);
+        const last = root.slice(-1).toLowerCase();
+
+        const suffixes = {
+            'n': { anim: ["oi", "ois", "oit", "oik"], inan: ["oit", "oi"], abs: "oi" },
+            'm': { anim: ["oi", "ois", "oit", "oik"], inan: ["oit", "oi"], abs: "-noi" },
+            's': { anim: ["oi", "ois", "oit", "oik"], inan: ["oit", "oi"], abs: "noi" },
+            'vowel': { anim: ["-oi", "-ois", "-oit", "-oik"], inan: ["-oit", "-oi"], abs: "noi" }
+        };
+
+        const rowMap = { k: 'm', t: 'm', r: 's' };
+        let row;
+        if (ending === "longVowel" || ending === "vowel") row = suffixes.vowel;
+        else row = suffixes[rowMap[last] || 'n'];
+        return this._resolveFromTable(root, row, nClass, number, ending);
+    },
+/* ==========================================================================
+    TRANSPORTATIVE
+========================================================================== */
+
+/* ==========================================================================
+    DIRECTIVE
+========================================================================== */
+
+/* ==========================================================================
+    ABLATIVE
+========================================================================== */
+
+/* ==========================================================================
+    INSTRUMENTAL
+========================================================================== */
+
+/* ==========================================================================
+    COMMITATIVE
+========================================================================== */
 };
