@@ -23,27 +23,6 @@ const courseUnits = [
     },
 ];
 
-// Variables
-let activeLesson = null;
-let activeQuestions = [];
-let currentModuleIndex = 0; // Track which module we are in
-let currentSubStep = 0;      // Track progress within a module (like vocab or sorting)
-let seenWords = new Set();
-let isCorrect = false;
-let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
-let currentSubLessonIndex = 0; // Add this near 'currentModuleIndex'
-window.NOM = NOM;
-window.ACC = ACC;
-window.ERG = ERG;
-window.DAT = DAT;
-window.GEN = GEN;
-window.LOC = LOC;
-// window.TRA = TRA;
-// window.DIR = DIR;
-// window.ABL = ABL;
-// window.INS = INS;
-// window.COM = COM;
-
 // Allow for shuffling of arrays
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -144,8 +123,16 @@ function renderDictionary() {
                     <select id="test-case" onchange="updateNumberOptions()">
                         <option value="ROOT">Root</option>
                         <option value="NOM">Nominative</option>
-                        <option value="ACC">Accusative</option>
                         <option value="ERG">Ergative</option>
+                        <option value="ACC">Accusative</option>
+                        <option value="DAT">Dative</option>
+                        <option value="GEN">Genitive</option>
+                        <option value="LOC">Locative</option>
+                        <option value="TRA">Transportative</option>
+                        <option value="ALL">Allative</option>
+                        <option value="ABL">Ablative</option>
+                        <option value="INS">Instrumental</option>
+                        <option value="COM">Comitative</option>
                     </select>
                     <select id="test-number"></select>
                 </div>
@@ -270,25 +257,44 @@ window.updateRefSearch = function() {
 window.showNounTable = function(enKey) {
     const data = nouns[enKey];
     const display = document.getElementById('ref-display-area');
-    const numbers = ["singular", "dual", "paucal", "plural"];
-    const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC"];
+    const cases = ["NOM", "ERG", "ACC", "DAT", "GEN", "LOC", "TRA", "ALL", "ABL", "INS", "COM"];
+
+    // 1. Determine columns based on Noun Class
+    let columns = [];
+    if (data.class === "animate") {
+        columns = [
+            { id: "singular", label: "Singular" },
+            { id: "dual", label: "Dual" },
+            { id: "paucal", label: "Paucal" },
+            { id: "plural", label: "Plural" }
+        ];
+    } else if (data.class === "inanimate") {
+        columns = [
+            { id: "singular", label: "Singular" },
+            { id: "plural", label: "Indefinite" } // Plural logic mapped to "Indefinite"
+        ];
+    } else if (data.class === "abstract") {
+        columns = [
+            { id: "singular", label: "Indefinite" } // Only one column for abstract
+        ];
+    }
 
     let tableHtml = `
         <div class="card fade-in">
             <h2>Noun Declension: ${enKey} (${data.root})</h2>
-            <p>Class: <strong>${data.class}</strong></p>
+            <p>Class: <strong>${data.class.charAt(0).toUpperCase() + data.class.slice(1)}</strong></p>
             <table class="grammar-table">
                 <thead>
                     <tr>
                         <th>Case</th>
-                        ${numbers.map(n => `<th>${n.charAt(0).toUpperCase() + n.slice(1)}</th>`).join('')}
+                        ${columns.map(col => `<th>${col.label}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
                     ${cases.map(c => `
                         <tr>
                             <td><strong>${c}</strong></td>
-                            ${numbers.map(n => `<td>${window[c](data, n)}</td>`).join('')}
+                            ${columns.map(col => `<td>${window[c](data, col.id)}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -375,49 +381,6 @@ window.onclick = function(event) {
     }
 };
 
-// This creates a "Master Lookup" for every possible form
-function generateMorphologyMap() {
-    const lookup = {};
-
-    // Map Nouns
-    Object.entries(nouns).forEach(([en, data]) => {
-        const numbers = ["singular", "dual", "paucal", "plural"];
-        const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC"];
-        
-        // Add the root itself
-        lookup[data.root.toLowerCase()] = { en, type: 'noun', data };
-
-        cases.forEach(c => {
-            numbers.forEach(n => {
-                // Use your existing NOM/ACC/ERG functions
-                const form = window[c](data, n).toLowerCase();
-                lookup[form] = { en, type: 'noun', data };
-            });
-        });
-    });
-
-    // Map Verbs
-    Object.entries(verbs).forEach(([en, data]) => {
-        const people = ["1st inclusive", "1st exclusive", "2nd formal", "2nd informal", "3rd animate", "3rd inanimate"];
-        const numbers = ["singular", "dual", "paucal", "plural"];
-        const tenses = ["present perfective", "past perfective", "future perfective"]; // Add core tenses
-
-        people.forEach(p => {
-            const nClass = p.split(' ').pop();
-            numbers.forEach(num => {
-                tenses.forEach(t => {
-                    const form = verbConjugator.conjugate(data, nClass, p, num, t).toLowerCase();
-                    lookup[form] = { en, type: 'verb', data };
-                });
-            });
-        });
-    });
-
-    return lookup;
-}
-
-const tvaaliLookup = generateMorphologyMap();
-
 // Hover over word to show translation
 function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     if (!sentence) return "";
@@ -430,19 +393,30 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
         let info = "";
 
         if (isTvaali) {
-            // Check the pre-computed map for the conjugated form
-            const match = tvaaliLookup[cleanWord];
-            if (match) {
-                info = (match.type === 'noun') 
-                    ? `En: ${match.en} | Class: ${match.data.class}`
-                    : `En: ${match.en} | Verb Stem: ${match.data.stem}`;
+    const match = tvaaliLookup[cleanWord];
+    
+    if (match) {
+        if (match.type === 'noun') {
+                info = `En: ${match.en} | ${match.data.class}`;
+            } 
+            else if (match.type === 'verb') {
+                // Show the specific conjugation details
+                const d = match.details;
+                const detailStr = d ? ` (${d.person} ${d.number} ${d.tense})` : "";
+                info = `Verb: ${match.en}${detailStr}`;
+            } 
+            else if (match.type === 'number') {
+                // Show the digit value for Tvaali numbers
+                info = `Digit: ${match.value}`;
             }
-        } else {
-            // English lookup remains the same
+        }
+    } else {
+            // English lookup...
             const nounKey = Object.keys(nouns).find(k => cleanWord === k.toLowerCase());
             const verbKey = Object.keys(verbs).find(k => cleanWord.includes(k.toLowerCase()));
             if (nounKey) info = `Tv: ${nouns[nounKey].root}`;
             else if (verbKey) info = `Tv: ${verbs[verbKey].stem}`;
+            else if (!isNaN(cleanWord)) info = `Tv: ${NUM(parseInt(cleanWord))}`;
         }
 
         if (info) {
@@ -452,6 +426,39 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
         return word; 
     }).join(" ");
 }
+
+// Parse numbers to allow for digit conversion
+function parseTvaaliNumber(str) {
+    const parts = str.split("-");
+    let total = 0;
+    let currentCount = 0;
+
+    // Map names back to numbers
+    const nameToVal = {};
+    for (let [num, obj] of Object.entries(numbers)) {
+        nameToVal[obj.cardinal] = parseInt(num);
+        nameToVal[obj.ordinal] = parseInt(num);
+    }
+    const baseToVal = {};
+    for (let [val, name] of Object.entries(numBases)) {
+        baseToVal[name] = parseInt(val);
+        baseToVal[name + "ar"] = parseInt(val);
+    }
+
+    for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (nameToVal[p] !== undefined) {
+            currentCount = nameToVal[p];
+            // If it's the last word and we haven't hit a base, it's just the ones
+            if (i === parts.length - 1) total += currentCount;
+        } else if (baseToVal[p] !== undefined) {
+            total += (currentCount || 1) * baseToVal[p];
+            currentCount = 0; // Reset for next part
+        }
+    }
+    return total;
+}
+
 
 // Check if a lesson has been shuffled
 function renderSortingModule(module) {

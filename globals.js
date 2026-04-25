@@ -1,0 +1,9 @@
+let activeLesson = null;
+let activeQuestions = [];
+let currentModuleIndex = 0;
+let currentSubStep = 0;
+let seenWords = new Set();
+let isCorrect = false;
+let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
+let currentSubLessonIndex = 0;
+let tvaaliLookup = {};

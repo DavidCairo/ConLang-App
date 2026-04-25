@@ -1,6 +1,7 @@
-Explain long vowel in accusative
-declension table
+newWords fix!
 verb declension and total structure map
+
+gnomic?
 
 
 script learner based on arabic
@@ -12,6 +13,16 @@ script learner based on arabic
 
 multiple language compatible
 
+
+
+
+Abstact Nouns: In a system like Tvaali's, Abstract nouns usually cover 
+Pillar,             Category,               Examples
+Silence (Muuna),    Absence & States,       "Darkness, Emptiness, Peace, Stillness"
+Justice (Raatvu),   Social & Moral Laws,    "Honor, Law, Taboo, Tradition, Debt"
+Cold (Kiish),       Sensory Extremes,       "Heat, Brightness, Pressure, Bitterness"
+Truth (Eenda),      Constants & Logic,      "Reality, Mathematics, Fate, Existence"
+Sleep (Iilham),     Biological Cycles,      "Life (the concept), Death, Hunger, Exhaustion"
 
 
 All features
