@@ -1,60 +1,264 @@
 /* ==========================================================================
-   NOUNS
+   NOUNS (Categorized by Animate/Inanimate/Abstract)
    ========================================================================== */
+const nouns = {
+    // Animate (Na / Na-variants)
+    animal:      { root: "tospee",      class: "animate" },
+    "big cat":   { root: "iimai",       class: "animate" },
+    cat:         { root: "rjiimai",     class:"animate"  },
+    bird:        { root: "djaavuum",    class: "animate" },
+    "bird of prey": { root: "atuska",   class: "animate" },
+    cattle:      { root: "nurjo",       class: "animate" },
+    child:       { root: "sevaan",      class: "animate" },
+    stream:      { root: "raaliin",     class: "animate" },
+    "spiritual animal": { root: "sjo",  class: "animate" },
+    eye:         { root: "taaram",      class: "animate" },
+    fire:        { root: "aahvuu",      class: "animate" },
+    friend:      { root: "luun",        class: "animate" },
+    deity:       { root: "sja",         class: "animate" },
+    king:        { root: "ankaali",     class: "animate" },
+    lizard:      { root: "kepraa",      class: "animate" },
+    man:         { root: "oroo",        class: "animate" },
+    chief:       { root: "ambas",       class: "animate" },
+    name:        { root: "naama",       class: "animate" },
+    reptile:     { root: "kepraatos",   class: "animate" },
+    river:       { root: "nam",         class: "animate" },
+    "sea creature": { root: "miintos",  class: "animate" },
+    sleeper:     { root: "ilhan",       class: "animate" },
+    storm:       { root: "beskor",      class: "animate" },
+    woman:       { root: "sidhi",       class: "animate" },
+    crocodile:   { root: "thakepraa",   class: "animate" },
+    being:       { root: "wariin",      class: "animate" },
+    hand:        { root: "tuum",        class: "animate" },
+    priest:      { root: "eetvalke",    class: "animate" },
+    "water buffalo": { root: "kaspyn",  class: "animate" },
+    archon:      { root: "tvamaak",     class: "animate" },
+    human:       { root: "iitaa",       class: "animate" },
+    citizen:     { root: "aarhanan",    class: "animate" },
+    being:       { root: "wariin",      class: "animate" },
+    "head of rulers": { root: "sachuk", class: "animate" },
+    pentarch:    { root: "achatvam",    class: "animate" },
+    curator:     { root: "tagajan",     class: "animate" },
+    scholar:     { root: "qambuin",     class: "animate" },
 
-const nouns={
-    // Animate
-    woman:  {en: "woman",       root:"sidhi",       class:"animate" },
-    man:    {en: "man",         root: "oroo",       class: "animate"},
-    fire:   {en: "fire",        root: "aahvuu",     class: "animate" },
-    bird:   {en: "bird",        root:"djaavuum",    class:"animate"},
-    cat:    {en: "cat",         root:"rjiimai",     class:"animate"},
-    name:   {en: "name",        root:"naama",       class:"animate"},
-    animal: {en: "animal",      root: "tospee",     class:"animate"},
-    cattle: {en: "cattle",      root: "nurjo",      class:"animate"},
-    child:  {en: "child",       root:"sevaan",      class: "animate"},
-    eye:    {en: "eye",         root:"taaram",      class: "animate"},
-    river:  {en: "river",       root:"nam",         class:"animate"},
-    elder:  {en: "elder",       root:"mamdoo",      class:"animate"},
-    warrior:{en: "warrior",     root:"tarkai",      class:"animate"},
-    dog:    {en: "dog",         root:"kjooma",      class:"animate"},
-    snake:  {en: "snake",       root:"ruveethi",    class:"animte"},
-    fish:   {en: "fish",        root:"aalhu",       class: "animate"},
-    spirit: {en: "spirit",      root:"nithoo",      class:"animate"},
+    // Inanimate (Ni)
+    sun:         { root: "nedhaan",     class: "inanimate" },
+    language:    { root: "tvaali",      class: "inanimate" },
+    alignment:   { root: "maqaas",      class: "inanimate" },
+    arboglyph:   { root: "kjawidawan",  class: "inanimate" },
+    territory:   { root: "aarhan",      class: "inanimate" },
+    cycle:       { root: "karkaam",     class: "inanimate" },
+    day:         { root: "nethaa",      class: "inanimate" },
+    daylight:    { root: "nethachi",    class: "inanimate" },
+    choice:      { root: "tolkuum",     class: "inanimate" },
+    earth:       { root: "araantho",    class: "inanimate" },
+    goal:        { root: "limriit",     class: "inanimate" },
+    grass:       { root: "nimiir",      class: "inanimate" },
+    hill:        { root: "kajaan",      class: "inanimate" },
+    house:       { root: "dek",         class: "inanimate" },
+    ice:         { root: "kimru",       class: "inanimate" },
+    land:        { root: "araan",       class: "inanimate" },
+    marking:     { root: "dawan",       class: "inanimate" },
+    moon:        { root: "buulan",      class: "inanimate" },
+    rock:        { root: "uurpo",       class: "inanimate" },
+    school:      { root: "qambointek",  class: "inanimate" },
+    sea:         { root: "miin",        class: "inanimate" },
+    sky:         { root: "talmaa",      class: "inanimate" },
+    snow:        { root: "tsiipli",     class: "inanimate" },
+    song:        { root: "sinproo",     class: "inanimate" },
+    star:        { root: "roojoo",      class: "inanimate" },
+    temple:      { root: "sjaadok",     class: "inanimate" },
+    moment:      { root: "thachi",      class: "inanimate" },
+    tree:        { root: "kjawi",       class: "inanimate" },
+    volcano:     { root: "aavuukajaan", class: "inanimate" },
+    water:       { root: "aaloo",       class: "inanimate" },
+    wave:        { root: "miihaan",     class: "inanimate" },
+    year:        { root: "doorjo",      class: "inanimate" },
+    stone:       { root: "irni",        class: "inanimate" },
+    book:        { root: "iktem",       class: "inanimate" },
+    piece:       { root: "artar",       class: "inanimate" },
+    section:     { root: "iktemiik",    class: "inanimate" },
+    location:    { root: "arantar",     class: "inanimate" },
+    table:       { root: "kiichtaa",    class: "inanimate" },
+    script:      { root: "kachar",      class: "inanimate" },
+    chapter:     { root: "saavuum",     class: "inanimate" },
+    word:        { root: "araali",      class: "inanimate" },
+    password:    { root: "tuurkiitaaraalii", class: "inanimate" },
+    consonant:   { root: "kiiras",      class: "inanimate" },
+    vowel:       { root: "ajoi",        class: "inanimate" },
+    punctuation: { root: "dawanaitar",  class: "inanimate" },
+    "cherry blossom": { root: "koivam", class: "inanimate" },
 
-
-    // Inanimate
-    water:  {en: "water",       root: "aaloo",      class: "inanimate" },
-    stone:  {en: "stone",       root:"irni",        class:"inanimate"},
-    sun:    {en: "sun",         root:"nedhaan",     class:"inanimate"},
-    grass:  {en: "grass",       root:"nimiir",      class:"inanimate"},
-    earth:  {en: "earth",       root:"araantho",    class:"inanimate"},
-    snow:   {en: "snow",        root:"tsiipli",     class:"inanimate"},
-    
-
-    // Abstract
-    silence: {en: "silence",    root: "muuna",     class: "abstract" },
-    justice: {en: "justice",    root: "raatvu",    class: "abstract" },
-    cold:    {en: "cold",       root: "torvoo",    class: "abstract" },
-    truth:   {en: "truth",      root: "eemda",     class: "abstract" },
-    sleep:   {en: "slepp",      root: "iilhan",    class: "abstract" },
+    // Abstract (Nb / Other)
+    health:      { root: "siituur",     class: "abstract" },
+    heat:        { root: "attsuum",     class: "abstract" },
+    rest:        { root: "ilhanan",     class: "abstract" },
+    total:       { root: "qoorum",      class: "abstract" },
+    beauty:      { root: "buulai",      class: "abstract" },
+    peace:       { root: "tarkaan",     class: "abstract" },
+    peace:       { root: "tarkan",      class: "abstract" }, 
+    silence:     { root: "muuna",       class: "abstract" },
+    politics:    { root: "tvaarhaniik", class: "abstract" },
+    system:      { root: "iimsetai",    class: "abstract" },
+    culture:     { root: "tajatar",     class: "abstract" },
+    religion:    { root: "sataiton",    class: "abstract" },
+    money:       { root: "suunga",      class: "abstract" }, // Social debt/value
+    law:         { root: "tvoon",       class: "abstract" },
+    bright:      { root: "kytaar",      class: "abstract" },
+    glow:        { root: "nehrasiit",   class: "abstract" },
+    origin:      { root: "machoitar",   class: "abstract" },
+    geography:   { root: "araanimoin",  class: "abstract" },
+    sentience:   { root: "iintusoin",   class: "abstract" },
+    abstract:    { root: "jyraishootrii", class: "abstract" },
+    numbers:     { root: "tarkan",      class: "abstract" },
+    "grammatical number": { root: "qootar", class: "abstract" },
+    fate:        { root: "sja",         class: "abstract" },
+    sleep:       { root: "iilham",      class: "abstract" },
+    existence:   { root: "haamotos",    class: "abstract" },
+    dream:       { root: "qaadotoon",   class: "abstract" },
 };
 
 /* ==========================================================================
-   VERBS
+   VERBS (Stems stripped of -te)
    ========================================================================== */
+const verbs = {
+    leave:       { stem: "muutiin",     trans: false },
+    exist:       { stem: "ha o",        trans: false },
+    arrive:      { stem: "na",          trans: false },
+    die:         { stem: "tirin",       trans: false },
+    fall:        { stem: "liin",        trans: false },
+    laugh:       { stem: "aahan",       trans: false },
+    live:        { stem: "saraa",       trans: false },
+    remain:      { stem: "meeles",      trans: false },
+    return:      { stem: "veetsis",     trans: false },
+    rise:        { stem: "daiso",       trans: false },
+    sit:         { stem: "kiiros",      trans: false },
+    walk:        { stem: "vaqes",       trans: false },
+    sleep:       { stem: "ilha",        trans: true }, // Vp Pair
+    hear:        { stem: "laamidi",     trans: true }, // Vp Pair
+    add:         { stem: "qooruu",      trans: true },
+    become:      { stem: "taan",        trans: true },
+    eat:         { stem: "iihes",       trans: true },
+    fight:       { stem: "taisuus",     trans: true },
+    help:        { stem: "oloor",       trans: true },
+    hit:         { stem: "tarkaa",      trans: true },
+    kill:        { stem: "tiprain",     trans: true },
+    know:        { stem: "iintus",      trans: true },
+    learn:       { stem: "qamboi",      trans: true },
+    love:        { stem: "aim",         trans: true },
+    see:         { stem: "roshuu",      trans: true },
+    sing:        { stem: "sinproo",     trans: true },
+    wash:        { stem: "nanraah",     trans: true },
+    bring:       { stem: "sheqaa",      trans: true },
+    burn:        { stem: "maalaa",      trans: true },
+    talk:        { stem: "kiir",        trans: false },
+    originate:   { stem: "machoi",      trans: false },
+    divide:      { stem: "ar",          trans: true },
+    curate:      { stem: "tagaja",      trans: true },
+    "set up":    { stem: "setai",       trans: true },
+    carry:       { stem: "chiitlaa",    trans: true },
+    write:       { stem: "kate",        trans: true },
+    locate:      { stem: "aran",        trans: true },
+    shine:       { stem: "nehras",      trans: false },
+    gleam:       { stem: "nehrasiit",   trans: false },
+    "rise up":   { stem: "doichti",     trans: false },
+    jump:        { stem: "aichti",      trans: false },
+    "jump up":   { stem: "aigaichti",   trans: false },
+    depart:      { stem: "kastaa",      trans: false },
+    leave:       { stem: "iitroo",      trans: false },
+    "fall down": { stem: "haiqoo",      trans: false },
+    descend:     { stem: "toivee",      trans: false },
+    play:        { stem: "oivi",        trans: false },
+    stop:        { stem: "pan",         trans: false },
+    inspect:     { stem: "katoo",       trans: true },
+    present:     { stem: "roshuusoo",   trans: true },
+    represent:   { stem: "rairoshuusoo", trans: true },
+};
 
-const verbs={
-    love:   {stem: "aim",       trans: true},
-    laugh:  {stem: "aahan",     trans: false},
-    sleep:  {stem: "iilha",     trans: false},
-    see:    {stem:"roshuu",     trans:true},
-    fall:   {stem:"liin",       trans:false},
-    hit:    {stem:"tarkaa",     trans:true},
-    carve:  {stem:"baintras",   trans:true},
-    eat:    {stem:"iihes",      trans:true},
-    become: {stem:"taan",       trans:true},
-    fight:  {stem:"taisuus",    trans:true},
+/* ==========================================================================
+   OTHER CATEGORIES
+   ========================================================================== */
+const adjectives = {
+    all:         { tv: "kji",       type: "N" },
+    big:         { tv: "qaadhaa",   type: "V" },
+    cold:        { tv: "torvoo",    type: "V" },
+    different:   { tv: "yliire",    type: "N" },
+    dry:         { tv: "maher",     type: "V" },
+    fast:        { tv: "riihaa",    type: "V" },
+    good:        { tv: "miirnuu",   type: "N" },
+    hot:         { tv: "atsuu",     type: "VN" },
+    long:        { tv: "tasmee",    type: "V" },
+    old:         { tv: "kuulko",    type: "V" },
+    same:        { tv: "liire",     type: "N" },
+    sharp:       { tv: "iit",       type: "V" },
+    small:       { tv: "hon",       type: "V" },
+    strong:      { tv: "sjaahi",    type: "V" },
+    white:       { tv: "biijoo",    type: "N" },
+    beautiful:   { tv: "buulaiqo",  type: "N" },
+    pure:        { tv: "diimaa",    type: "N" },
+    political:   { tv: "totvaarhaniik", type: "N" },
+    important:   { tv: "aini",          type: "N" },
+    geographical: { tv: "toraanimoin",  type: "N" },
+    bright:      { tv: "kytaar",        type: "V" },
+    many:        { tv: "tsoi",          type: "N" },
+    happy:       { tv: "mai",           type: "V" },
+    slow:        { tv: "kanchai",       type: "V" },
+    animate:     { tv: "sjoohen",       type: "N" },
+    inanimate:   { tv: "taisjoohen",    type: "N" },
+    sweet:       { tv: "makai",         type: "N" },
+    paucal:      { tv: "kjonto",        type: "N" },
+    plural:      { tv: "tsoiki",        type: "N" },
+};
+
+const adverbs = {
+    additionally: "qooruudoo",
+    alone:        "giisahaa",
+    enough:       "qaanas",
+    still:        "meeles",
+    therefore:    "suukimdoo",
+    too:          "qothoo",
+    totally:      "qooruntoo",
+    again:        "saichii",
+    also:        "juki",
+    tomorrow:    "hasiitsoo",
+    now:         "huun",
+    soon:        "sjai",
+    here:        "kahaa",
+    newly:       "doogas",
+};
+
+const postpositions = {
+    against:     { tv: "siin",      case: "default" },
+    under:       { tv: "qaani",     case: "default" },
+    beyond:      { tv: "minaam",    case: "default" },
+    by:          { tv: "voti",      case: "INS" },
+    from:        { tv: "an",        case: "LOC" },
+    in:          { tv: "sar",       case: "LOC" },
+    into:        { tv: "kit",       case: "DIR" },
+    like:        { tv: "enke",      case: "default" },
+    on:          { tv: "naigaa",    case: "LOC" },
+    through:     { tv: "oonuu",     case: "DIR" },
+    with:        { tv: "jiim",      case: "COM" },
+    with:        { tv: "tiim",      case: "INS" },
+    about:       { tv: "janon",     case: "ABL" },
+    of:          { tv: "tson",      case: "GEN" },
+    after:       { tv: "aigaa",     case: "LOC" },
+};
+
+const conjunctions = {
+    and:         "loo",
+    "and also":  "loojuki",
+    but:         "do",
+    or:          "iis",
+    "either or": "iis",
+    thus:        "re",
+    therefore:   "re",
+    unless:      "liihuuntho",
+};
+
+const particles = {
+    complementizer: { en: "that", tv: "hiintho" },
+    this:           { en: "this", tv: "koo" },
 };
 
 /* ==========================================================================
@@ -410,4 +614,25 @@ function generateMorphologyMap() {
     });
 
     return lookup;
-}
+};
+
+/* ==========================================================================
+   GLOBAL SEARCHABLE LEXICON
+   ========================================================================== */
+const allLexicon = [
+    ...Object.entries(nouns).map(([en, d]) => ({ 
+        en: en, tv: d.root, type: 'noun', class: d.class 
+    })),
+    ...Object.entries(verbs).map(([en, d]) => ({ 
+        en: en, tv: d.stem, type: 'verb', trans: d.trans 
+    })),
+    ...Object.entries(adjectives).map(([en, d]) => ({ 
+        en: en, tv: d.tv, type: 'adj' 
+    })),
+    ...Object.entries(adverbs).map(([en, tv]) => ({ 
+        en: en, tv: tv, type: 'adv' 
+    })),
+    ...Object.entries(postpositions).map(([en, d]) => ({ 
+        en: en, tv: d.tv, type: 'post', case: d.case 
+    }))
+];
