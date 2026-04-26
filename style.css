@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. VARIABLES & FONTS
+   1. VARIABLES & BASE STYLES
    ========================================================================== */
 :root {
     --primary-green: #58cc02;
@@ -10,6 +10,7 @@
     --text-dark: #333;
     --white: #ffffff;
     --border-gray: #e5e5e5;
+    --shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 @font-face {
@@ -17,9 +18,6 @@
     src: url('assets/font/tvaaliFormal.otf');
 }
 
-/* ==========================================================================
-   2. GLOBAL DEFAULTS
-   ========================================================================== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
@@ -38,17 +36,23 @@ body {
 }
 
 /* ==========================================================================
-   3. COMMON COMPONENTS (Inputs, Buttons, Cards)
+   2. REUSABLE COMPONENTS (Cards, Buttons, Inputs)
    ========================================================================== */
 .card {
     background: var(--white);
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
     text-align: center;
     width: 100%;
     max-width: 450px;
     margin: 0 auto;
+}
+
+/* Specific wider card for complex tools */
+.sandbox-card {
+    max-width: 800px !important;
+    margin-bottom: 40px;
 }
 
 input[type="text"], select {
@@ -67,8 +71,8 @@ input[type="text"]:focus {
     outline: none;
 }
 
+/* Buttons */
 button {
-    background-color: var(--primary-green);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -81,49 +85,21 @@ button {
 button:hover { filter: brightness(1.05); }
 button:active { transform: scale(0.98); }
 
-.primary-btn {
-    background-color: var(--primary-purple);
+.primary-btn, .dict-btn {
     padding: 15px 30px;
     font-size: 1.1rem;
-    border-radius: 50px; /* This creates the rounded "pill" look */
+    border-radius: 50px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 
-.primary-btn:hover { transform: scale(1.05); }
-.dict-btn { 
-    background-color: var(--primary-teal); 
-    padding: 15px 30px;    /* Match primary-btn padding */
-    font-size: 1.1rem;      /* Match primary-btn font size */
-    border-radius: 50px;   /* Match primary-btn pill shape */
-    color: white;
-    font-weight: bold;
-}
-
-.dict-btn:hover { 
-    transform: scale(1.05); 
-    filter: brightness(1.05); 
-}
-
-.mcq-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-    width: 100%;
-}
-
-.mcq-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    transition: background-color 0.2s;
-}
+.primary-btn { background-color: var(--primary-purple); }
+.dict-btn { background-color: var(--primary-teal); }
 
 /* ==========================================================================
-   4. NAVIGATION & LESSON MAP
+   3. NAVIGATION & PROGRESS
    ========================================================================== */
 .nav-container {
     display: flex;
@@ -134,34 +110,6 @@ button:active { transform: scale(0.98); }
     margin-bottom: 20px;
 }
 
-.lesson-card {
-    position: relative;
-    background: var(--white);
-    border: 2px solid var(--border-gray);
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 0;
-    transition: border-color 0.3s;
-}
-
-.lesson-card:hover { border-color: var(--primary-green); }
-
-.info-btn-home {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: var(--primary-blue);
-    color: white;
-    border-radius: 50%;
-    width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center;
-}
-
-/* ==========================================================================
-   5. PROGRESS BAR
-   ========================================================================== */
-.lesson-progress-container { margin: 20px 0; }
-
 .progress-bar-line {
     display: flex;
     height: 35px;
@@ -169,11 +117,14 @@ button:active { transform: scale(0.98); }
     border-radius: 25px;
     overflow: hidden;
     border: 2px solid #ccc;
+    margin-top: 20px;
 }
 
 .progress-segment {
     flex: 1;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
     border-right: 1px solid rgba(255,255,255,0.3);
@@ -183,69 +134,53 @@ button:active { transform: scale(0.98); }
 
 .segment-done { background-color: #4CAF50; }
 .segment-pending { background-color: #9e9e9e; }
-.progress-segment:hover { filter: brightness(1.2); }
 
 /* ==========================================================================
-   6. LESSON INTERFACE & VOCAB
+   4. LESSONS & UNITS
    ========================================================================== */
-.large-tv {
-    font-size: 2.5rem;
-    margin: 20px 0;
-    color: #2c3e50;
+.unit-container {
+    padding: 35px;
+    margin-bottom: 50px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background-color: var(--white);
 }
 
-#feedback {
-    margin-top: 15px;
-    font-weight: bold;
-    min-height: 1.2em;
-}
-
-.vocab-preview-container {
-    background: #f9f9fb;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    border: 1px solid #eee;
-}
-
-.intro-vocab-list {
+.unit-lessons {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
 }
 
-.intro-vocab-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.lesson-card {
+    position: relative;
     background: var(--white);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 2px solid var(--border-gray);
+    border-radius: 15px;
+    padding: 20px;
+    transition: border-color 0.3s;
+    height: 100%;
 }
 
-.intro-vocab-item .tv {
-    color: var(--primary-teal);
-    font-weight: bold;
-}
+.lesson-card:hover { border-color: var(--primary-green); }
 
-@media (max-width: 600px) {
-    .intro-vocab-list { grid-template-columns: 1fr; }
+.info-btn-home {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
 }
 
 /* ==========================================================================
-   7. SANDBOX & DICTIONARY LAYOUT
+   5. DICTIONARY & SANDBOX TOOLS
    ========================================================================== */
-
-.sandbox-card {
-    max-width: 800px !important; /* Allow the sandbox to be wider than standard cards */
-    margin-bottom: 40px;
-}
-
 .sandbox-global-controls {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
     margin-bottom: 20px;
 }
 
@@ -253,7 +188,6 @@ button:active { transform: scale(0.98); }
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
-    min-height: 150px;
 }
 
 .sandbox-column {
@@ -275,12 +209,6 @@ button:active { transform: scale(0.98); }
     text-transform: uppercase;
 }
 
-.sandbox-footer {
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-    margin-top: 10px;
-}
-
 #sandbox-result {
     color: #2c3e50;
     margin-top: 20px;
@@ -288,59 +216,14 @@ button:active { transform: scale(0.98); }
     letter-spacing: 1px;
 }
 
-/* Dictionary Tables Layout */
-.dict-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
-}
-
-@media (max-width: 768px) {
-    .sandbox-display-wrapper, 
-    .dict-grid, 
-    .sandbox-global-controls {
-        grid-template-columns: 1fr;
-        flex-direction: column;
-    }
-}
-
-/* Ensure the dictionary tables fit within their containers */
-.dict-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-}
-
-/* ==========================================================================
-   8. MODALS & INFO POPUPS
-   ========================================================================== */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6);
-}
-
-.modal-content {
-    background-color: var(--white);
-    margin: 5% auto;
-    padding: 30px;
-    width: 90%;
-    max-width: 800px;
-    border-radius: 15px;
-    position: relative;
-    max-height: 85vh;
-    overflow-y: auto;
-}
-
 .modal-vocab-list {
+    text-align: left;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 15px;
 }
 
 .modal-vocab-row {
@@ -353,171 +236,108 @@ button:active { transform: scale(0.98); }
     border-radius: 10px;
 }
 
-/* ==========================================================================
-   9. LINGUISTIC TAGS & HIGHLIGHTS
-   ========================================================================== */
-.meta-tag {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 12px;
-    letter-spacing: 0.5px;
-    border: 1px solid transparent;
+#ref-display-area .card {
+    max-width: 90%; /* Allow it to fill the Grammar Lab width */
+    margin-top: 20px;
+    border-top: 4px solid var(--primary-blue); /* Distinct color for noun reference */
 }
 
-.tag-animate { background: #e3f2fd; color: #1976d2; border-color: #bbdefb; }
-.tag-inanimate { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
-.tag-abstract { background-color: #faf5ff; color: #9333ea; border: 1px solid #e9d5ff; }
-.tag-verb { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
-
-.ergative-tag { color: #e74c3c; font-weight: bold; }
-.accusative-tag { color: var(--primary-blue); font-weight: bold; }
-.new-word-highlight { color: var(--primary-purple); font-weight: bold; border-bottom: 2px solid var(--primary-purple); }
-
-.tvaali-text { word-break: break-word; font-weight: bold; color: #2c3e50; }
-
-/* ==========================================================================
-   10. SPECIAL TRANSFORMS
-   ========================================================================== */
-.vertical-script {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(90deg);
-    display: inline-block;
+.search-help-text {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
 }
 
-/* ==========================================================================
-   11. UNIT BOXES (Curriculum Grouping)
-   ========================================================================== */
-
-.unit-container {
-    padding: 35px;
-    margin-bottom: 50px;
-    border-radius: 25px;
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.unit-header {
-    margin-top: 0;
+/* Dictionary Control Layout */
+.dictionary-controls {
+    display: flex;
+    gap: 15px;
     margin-bottom: 25px;
-    font-size: 2rem;
-    color: #2c3e50;
-    text-align: left;
-    border-bottom: 3px solid rgba(0,0,0,0.1);
-    display: inline-block;
-    padding-bottom: 8px;
+    align-items: center;
 }
 
-.unit-lessons {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Two lessons side-by-side */
-    gap: 25px;
-}
-
-.lesson-card {
-    background: white;
-    margin: 0 !important; /* Reset margin as the grid handles spacing */
-    height: 100%;
+.toggle-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    align-items: flex-start;
+    gap: 5px;
 }
 
-.progress-text {
-    margin-top: 10px;
-    font-size: 0.85rem;
+.toggle-label {
+    font-size: 0.75rem;
     font-weight: bold;
-    color: #555;
+    color: var(--primary-purple);
+    text-transform: uppercase;
 }
 
-/* Ensure the layout stacks nicely on smaller screens */
-@media (max-width: 900px) {
-    .unit-lessons {
-        grid-template-columns: 1fr;
-    }
-    
-    .unit-container {
-        padding: 20px;
-    }
+/* The "Light Switch" Button */
+.toggle-switch {
+    background-color: var(--primary-purple); /*#b77ceb; */
+    color: white;
+    border: 2px solid var(--border-gray);
+    padding: 10px 20px;
+    min-width: 180px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* ==========================================================================
-   12. INTERACTIVE ELEMENTS (Tooltips)
-   ========================================================================== */
-
-/* Word Tooltip Container */
-.word-tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: help;
-    border-bottom: 1px dotted #888;
+/* Active state (Tvaali to English) */
+.toggle-switch.active {
+    background-color: var(--primary-teal);
+    color: white;
+    border-color: #248277;
+    box-shadow: 0 4px 0 #1b635b; /* Simple 3D effect */
 }
 
-/* Tooltip Popover (The hidden text) */
-.word-tooltip .tooltip-text {
-    visibility: hidden;
-    width: 180px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px;
-    
-    /* Position it above the word */
-    position: absolute;
-    z-index: 1000;
-    bottom: 125%; 
-    left: 50%;
-    transform: translateX(-50%);
-    
-    /* Visuals and Animation */
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    pointer-events: none; /* Crucial: stops the tooltip from flickering */
+.toggle-switch:active {
+    transform: translateY(2px);
+    box-shadow: none;
 }
 
-/* Show on hover */
-.word-tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* ==========================================================================
-   13. GRAMMAR TABLE 
-   ========================================================================== */
-
-.ref-search-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    margin-top: 15px;
-    max-height: 200px;
-    overflow-y: auto;
+#sandbox-result {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    border-radius: 8px;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: 2px dashed #ccc;
+    color: var(--primary-purple);
+    font-size: 1.5rem;
 }
 
-.ref-item {
-    padding: 8px;
-    background: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
+.sandbox-footer {
+    margin-top: 20px;
+    text-align: center;
 }
 
-.ref-item:hover { background: #e0f0ff; }
+/* ==========================================================================
+   6. GRAMMAR TABLES & SCROLLING
+   ========================================================================== */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid var(--border-gray);
+    /* Shadow indicators for scrolling */
+    background: linear-gradient(to right, white 30%, rgba(255,255,255,0)), 
+                linear-gradient(to right, rgba(255,255,255,0), white 70%) 0 100%, 
+                radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.2), rgba(0,0,0,0)), 
+                radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+}
 
 .grammar-table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
-    margin-top: 15px;
 }
 
 .grammar-table th, .grammar-table td {
@@ -527,13 +347,147 @@ button:active { transform: scale(0.98); }
 }
 
 .grammar-table th { background: #f4f4f4; }
-.grammar-table tr:nth-child(even) { background: #fafafa; }
-
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
+.grammar-table td:first-child {
+    background-color: #f8f9fa;
+    color: var(--primary-purple);
+    font-weight: bold;
+    text-align: left;
 }
+
+.table-controls {
+    background: #fdfdfd;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    border: 1px solid var(--border-gray);
+}
+
+.table-controls select { width: auto; min-width: 150px; margin: 0; }
+
+/* ==========================================================================
+   7. LINGUISTIC STYLING (Tags & Tooltips)
+   ========================================================================== */
+.meta-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+}
+
+.tag-noun { background: #e3f2fd; color: #1976d2; border-color: #bbdefb; }
+.tag-verb { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
+.tag-animate { background: #e3f2fd; color: #1976d2; }
+.tag-inanimate { background: #f5f5f5; color: #616161; }
+
+.word-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    border-bottom: 1px dotted #888;
+}
+
+.word-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%; 
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.word-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+/* ==========================================================================
+   8. UTILITIES & ANIMATION
+   ========================================================================== */
+.large-tv { font-size: 2.5rem; margin: 20px 0; color: #2c3e50; }
+.tvaali-text { font-weight: bold; color: #2c3e50; }
+
+h4 {
+    text-align: left;
+    color: var(--primary-teal);
+    border-left: 4px solid var(--primary-teal);
+    padding-left: 10px;
+    margin: 20px 0 10px 0;
+}
+
+.fade-in { animation: fadeIn 0.3s ease-in; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+    .unit-lessons { grid-template-columns: 1fr; }
+    .sandbox-display-wrapper { flex-direction: column; }
+    .table-controls { flex-direction: column; align-items: stretch; }
+}
+
+/* ==========================================================================
+   8. AUTOCOMPLETE
+   ========================================================================== */
+.search-wrapper {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-gray);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    z-index: 100;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f7ff;
+}
+
+.sugg-en { font-weight: bold; color: var(--text-dark); flex: 1; }
+.sugg-tv { color: var(--primary-teal); font-style: italic; }
+
+/* Scrollbar styling for the suggestions */
+.autocomplete-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+.autocomplete-suggestions::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
 }

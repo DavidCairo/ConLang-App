@@ -120,7 +120,7 @@ const lesson2Data = {
                             lessonId: 2,
                             type: "tv_to_en",
                             tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
-                            english: ["she sees the two eyes", "she sees two eye", "he sees the two eyes", "he sees two eyes"]
+                            english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                         {
                             lessonId: 2,
@@ -360,13 +360,13 @@ const lesson2Data = {
                             lessonId: 2,
                             type: "tv_to_en",
                             tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
-                            english: ["she sees the two eyes", "she sees two eye", "he sees the two eyes", "he sees two eyes"]
+                            english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
                             tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
-                            english: ["she sees the two eyes", "she sees two eye", "he sees the two eyes", "he sees two eyes"]
+                            english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                     ]
                 },

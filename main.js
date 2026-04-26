@@ -23,6 +23,20 @@ const courseUnits = [
     },
 ];
 
+const dictionaryMap = generateMorphologyMap();
+tvaaliLookup = Object.assign({}, dictionaryMap, tvaaliLookup);
+window.NOM = (nounObj, num) => nounCaser.getNominative(nounObj, num);
+window.ERG = (nounObj, num) => nounCaser.getErgative(nounObj, num);
+window.ACC = (nounObj, num) => nounCaser.getAccusative(nounObj, num);
+window.DAT = (nounObj, num) => nounCaser.getDative(nounObj, num);
+window.GEN = (nounObj, num) => nounCaser.getGenitive(nounObj, num);
+window.LOC = (nounObj, num) => nounCaser.getLocative(nounObj, num);
+window.TRA = (nounObj, num) => nounCaser.getTransportative(nounObj, num);
+window.ALL = (nounObj, num) => nounCaser.getAllative(nounObj, num);
+window.ABL = (nounObj, num) => nounCaser.getAblative(nounObj, num);
+window.INS = (nounObj, num) => nounCaser.getInstrumental(nounObj, num);
+window.COM = (nounObj, num) => nounCaser.getComitative(nounObj, num);
+
 // Allow for shuffling of arrays
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -99,142 +113,306 @@ function renderHome() {
 function renderDictionary() {
     const app = document.getElementById('app');
     
-    let html = `
+    // 2. Helper to get the button text/state
+    const getModeText = () => isTvToEn ? "Tvaali ➔ English" : "English ➔ Tvaali";
+
+    const renderList = () => {
+        const term = document.getElementById('dict-search')?.value.toLowerCase() || "";
+        const nounsList = Object.entries(nouns).map(([en, data]) => ({ en, tv: data.root, type: 'noun' }));
+        const verbsList = Object.entries(verbs).map(([en, data]) => ({ en, tv: data.stem, type: 'verb' }));
+        
+        const combined = [...nounsList, ...verbsList].sort((a, b) => 
+            isTvToEn ? a.tv.localeCompare(b.tv) : a.en.localeCompare(b.en)
+        );
+
+        const filtered = combined.filter(item => 
+            isTvToEn ? item.tv.toLowerCase().includes(term) : item.en.toLowerCase().includes(term)
+        );
+
+        return filtered.map(item => `
+            <div class="modal-vocab-row">
+                <div class="vocab-left">
+                    <span class="en-word">${isTvToEn ? item.tv : item.en}</span>
+                    <span class="meta-tag tag-${item.type}">${item.type}</span>
+                </div>
+                <div class="vocab-right">
+                    <span class="tvaali-text">${isTvToEn ? item.en : item.tv}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // 3. Main HTML structure
+    app.innerHTML = `
         <div class="nav-container">
-            <button class="primary-btn" onclick="renderHome()">⬅ Back to Lessons</button>
+            <button class="primary-btn" onclick="renderHome()">⬅ Back</button>
         </div>
-        <h1>Tvaali Dictionary</h1>
+        <h1>Dictionary</h1>
+        <div class="card sandbox-card">
+            <div class="dictionary-controls">
+                <input type="text" id="dict-search" placeholder="Search..." oninput="document.getElementById('dict-results').innerHTML = renderList()">
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Mode:</span>
+                    <button id="mode-toggle-btn" class="toggle-switch ${isTvToEn ? 'active' : ''}" onclick="toggleDictMode()">
+                        ${getModeText()}
+                    </button>
+                </div>
+            </div>
+            <div id="dict-results" class="modal-vocab-list">
+                ${renderList()}
+            </div>
+        </div>
+    `;
+}
+
+// 4. The global toggle function
+window.toggleDictMode = function() {
+    isTvToEn = !isTvToEn;
+    renderDictionary(); // Re-render to update sort and text
+};
+
+function renderReference() {
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+        <div class="nav-container">
+            <button class="primary-btn" onclick="renderHome()">⬅ Back</button>
+        </div>
+        <h1>Grammar Laboratory</h1>
 
         <div class="card sandbox-card">
-            <h3>Grammar Tester</h3>
-            
-            <div class="sandbox-global-controls">
-                <select id="test-type" onchange="toggleSandboxFields(); updateNumberOptions();">
-                    <option value="noun">Noun Caser</option>
-                    <option value="verb">Verb Conjugator</option>
-                </select>
-                <input type="text" id="test-input" oninput="updateNumberOptions()" placeholder="Type a word...">
-            </div>
-
+            <h3>Word Builder</h3>
             <div class="sandbox-display-wrapper">
-                
-                <div id="noun-fields" class="sandbox-column">
-                    <label>Noun Settings</label>
-                    <select id="test-case" onchange="updateNumberOptions()">
-                        <option value="ROOT">Root</option>
-                        <option value="NOM">Nominative</option>
-                        <option value="ERG">Ergative</option>
-                        <option value="ACC">Accusative</option>
-                        <option value="DAT">Dative</option>
-                        <option value="GEN">Genitive</option>
-                        <option value="LOC">Locative</option>
-                        <option value="TRA">Transportative</option>
-                        <option value="ALL">Allative</option>
-                        <option value="ABL">Ablative</option>
-                        <option value="INS">Instrumental</option>
-                        <option value="COM">Comitative</option>
+                <div class="sandbox-column">
+                    <label>Base Word</label>
+                    <select id="test-type" onchange="toggleSandboxFields()">
+                        <option value="noun">Noun</option>
+                        <option value="verb">Verb</option>
                     </select>
-                    <select id="test-number"></select>
+                    <input type="text" id="test-input" placeholder="Enter stem (e.g. sidhi)" oninput="runSandboxTest()">
                 </div>
 
-                <div id="verb-fields" class="sandbox-column">
+                <div id="noun-fields" class="sandbox-column">
+                    <label>Noun Settings</label>
+                    <select id="test-case" onchange="runSandboxTest()">
+                        <option value="nominative">Nominative</option>
+                        <option value="ergative">Ergative</option>
+                        <option value="accusative">Accusative</option>
+                        <option value="genitive">Genitive</option>
+                        <option value="dative">Dative</option>
+                        <option value="locative">Locative</option>
+                        <option value="transportative">Transporative</option>
+                        <option value="allative">Allative</option>
+                        <option value="ablative">Ablative</option>
+                        <option value="instrumental">Instrumental</option>
+                        <option value="comitative">Comitative</option>
+                    </select>
+                    <select id="test-number" onchange="runSandboxTest()">
+                        <option value="singular">Singular</option>
+                        <option value="dual">Dual</option>
+                        <option value="paucal">Paucal</option>
+                        <option value="plural">Plural</option>
+                    </select>
+                </div>
+
+                <div id="verb-fields" class="sandbox-column" style="display:none;">
                     <label>Verb Settings</label>
-                    <select id="test-person" onchange="updateNumberOptions()">
+                    <select id="test-person" onchange="runSandboxTest()">
                         <option value="1st inclusive">1st inclusive</option>
                         <option value="1st exclusive">1st exclusive</option>
                         <option value="2nd formal">2nd formal</option>
                         <option value="2nd informal">2nd informal</option>
                         <option value="3rd animate">3rd animate</option>
                         <option value="3rd inanimate">3rd inanimate</option>
-                        <option value="3rd abstract">3rd abstract</option>
-                        <option value="indefinite animate">indefinite animate</option>
-                        <option value="indefinite inanimate">indefinite inanimate</option>
                     </select>
-
-                    <select id="test-verb-number"></select>
-
-                    <select id="test-aspect" onchange="filterTenses()">
-                        <option value="perfective">Perfective</option>
-                        <option value="continuous">Continuous</option>
-                        <option value="habitual">Habitual</option>
+                    <select id="test-verb-number" onchange="runSandboxTest()">
+                        <option value="singular">Singular</option>
+                        <option value="dual">Dual</option>
+                        <option value="paucal">Paucal</option>
+                        <option value="plural">Plural</option>
                     </select>
-
-                    <select id="test-tense"></select>
+                    <select id="test-tense" onchange="runSandboxTest()">
+                        <option value="present habitual">Present Habitual</option>
+                        <option value="past perfective">Past Perfective</option>
+                        <option value="past continuous">Past Continuous</option>
+                        <option value="past habitual">Past Habitual</option>
+                    </select>
                 </div>
             </div>
 
             <div class="sandbox-footer">
-                <button class="primary-btn" onclick="runSandboxTest()">Generate Form</button>
-                <h2 id="sandbox-result">---</h2>
+                <label class="toggle-label">Result:</label>
+                <div id="sandbox-result" class="tvaali-text">---</div>
             </div>
         </div>
-        <div class="dict-grid">
-            <div class="card">
-                <h3>Nouns</h3>
-                <table class="dict-table">
-                <thead><tr><th>English</th><th>Root</th><th>Class</th></tr></thead>
-                <tbody>
 
-                ${Object.entries(nouns).map(([en, data]) => `
-
-                <tr><td>${en}</td><td>${data.root}</td><td>${data.class}</td></tr>
-
-                `).join('')}
-
-                </tbody>
-                </table>
+        <div class="card sandbox-card">
+            <h3>Morphology Explorer</h3>
+            <p>Type a word to view its full declension table (Nouns) or load into Builder (Verbs).</p>
+            <div class="search-wrapper">
+                <input type="text" id="ref-search" 
+                       oninput="handleAutocomplete()" 
+                       placeholder="Start typing (e.g., 'tree' or 'sidh')..." 
+                       autocomplete="off">
+                <div id="autocomplete-list" class="autocomplete-suggestions"></div>
             </div>
-
-            <div class="card">
-                <h3>Verbs</h3>
-                <table class="dict-table">
-                <thead><tr><th>English</th><th>Stem</th><th>Trans.</th></tr></thead>
-                <tbody>
-
-                ${Object.entries(verbs).map(([en, data]) => `
-
-                <tr><td>${en}</td><td>${data.stem}</td><td>${data.trans ? "Y" : "N"}</td></tr>
-
-                `).join('')}
-
-                </tbody>
-                </table>
-            </div>
+            <div id="ref-display-area"></div>
         </div>
-        `;
 
-    app.innerHTML = html;
-    
-    toggleSandboxFields(); 
-    updateNumberOptions();
-    filterTenses();
-}
-
-function renderReference() {
-    const app = document.getElementById('app');
-    
-    let html = `
-        <div class="nav-container">
-            <button class="primary-btn" onclick="renderHome()">⬅ Back to Lessons</button>
-        </div>
-        <h1>Grammar Reference</h1>
-
-        <div class="card">
-            <h3>Morphology Tables</h3>
-            <p>Search for a word to see its full declension or conjugation patterns.</p>
-            <input type="text" id="ref-search" oninput="updateRefSearch()" placeholder="Search English or Tvaali root...">
-            
-            <div id="ref-search-results" class="ref-search-grid">
+        <div class="card sandbox-card">
+            <h3>Affix Reference</h3>
+            <div id="loose-tables-area">
                 </div>
         </div>
-
-        <div id="ref-display-area">
-            </div>
     `;
 
-    app.innerHTML = html;
-    updateRefSearch(); // Initial populate
+    // CRITICAL: Initialize the view so the correct fields are shown/hidden immediately
+    if (typeof toggleSandboxFields === "function") {
+        toggleSandboxFields();
+    }
 }
+
+window.toggleSandboxFields = function() {
+    const type = document.getElementById('test-type').value;
+    const nounFields = document.getElementById('noun-fields');
+    const verbFields = document.getElementById('verb-fields');
+    
+    if (type === 'verb') {
+        nounFields.style.display = 'none';
+        verbFields.style.display = 'flex';
+    } else {
+        nounFields.style.display = 'flex';
+        verbFields.style.display = 'none';
+    }
+    runSandboxTest(); // Refresh result when switching types
+};
+
+window.runSandboxTest = function() {
+    const type = document.getElementById('test-type').value;
+    const input = document.getElementById('test-input').value.trim().toLowerCase();
+    const resultDisplay = document.getElementById('sandbox-result');
+
+    if (!input) {
+        resultDisplay.innerText = "---";
+        return;
+    }
+
+    if (type === 'noun') {
+        // Find the noun in your data
+        const nounData = nouns[input] || Object.values(nouns).find(n => n.root === input);
+        
+        if (!nounData) {
+            resultDisplay.innerText = "Noun not found";
+            return;
+        }
+        
+        const caseSelectValue = document.getElementById('test-case').value;
+        const num = document.getElementById('test-number').value;
+
+        // Map your dropdown values to your window function names
+        const caseMapper = {
+            "nominative": "NOM",
+            "ergative": "ERG",
+            "accusative": "ACC",
+            "genitive": "GEN",
+            "dative": "DAT",
+            "locative": "LOC",
+            "transportative": "TRA",
+            "allative": "ALL",
+            "ablative": "ABL",
+            "instrumental": "INS",
+            "comitative": "COM"
+        };
+
+        const functionName = caseMapper[caseSelectValue];
+
+        // Call the dynamic function (e.g., window.NOM(nounData, 'singular'))
+        if (typeof window[functionName] === "function") {
+            resultDisplay.innerText = window[functionName](nounData, num);
+        } else {
+            resultDisplay.innerText = "Function " + functionName + " not found";
+        }
+        
+    } else if (type === 'verb') {
+        const verbData = verbs[input] || Object.values(verbs).find(v => v.stem === input);
+        if (!verbData) {
+            resultDisplay.innerText = "Verb not found";
+            return;
+        }
+
+        const person = document.getElementById('test-person').value;
+        const num = document.getElementById('test-verb-number').value;
+        const tense = document.getElementById('test-tense').value;
+        const vClass = person.includes("inanimate") ? "inanimate" : "animate";
+        
+        // Ensure your verbConjugator object and conjugate method are defined
+        if (window.verbConjugator && typeof window.verbConjugator.conjugate === "function") {
+            resultDisplay.innerText = window.verbConjugator.conjugate(verbData, vClass, person, num, tense);
+        } else {
+            resultDisplay.innerText = "Verb logic error";
+        }
+    }
+};
+
+window.handleAutocomplete = function() {
+    const term = document.getElementById('ref-search').value.toLowerCase();
+    const suggestionsDiv = document.getElementById('autocomplete-list');
+    const displayArea = document.getElementById('ref-display-area');
+
+    // Clear everything if less than 2 characters
+    if (term.length < 2) {
+        suggestionsDiv.innerHTML = "";
+        return;
+    }
+
+    // Combine and filter
+    const combined = [
+        ...Object.entries(nouns).map(([en, data]) => ({ en, tv: data.root, type: 'noun' })),
+        ...Object.entries(verbs).map(([en, data]) => ({ en, tv: data.stem, type: 'verb' }))
+    ].filter(item => item.en.toLowerCase().includes(term) || item.tv.toLowerCase().includes(term));
+
+    // Render suggestions
+    suggestionsDiv.innerHTML = combined.map(item => `
+        <div class="suggestion-item" onclick="selectWord('${item.en}', '${item.type}')">
+            <span class="sugg-en">${item.en}</span>
+            <span class="sugg-tv">${item.tv}</span>
+            <span class="meta-tag tag-${item.type}">${item.type}</span>
+        </div>
+    `).join('');
+};
+
+window.selectWord = function(enKey, type) {
+    // Clear search and suggestions
+    document.getElementById('ref-search').value = "";
+    document.getElementById('autocomplete-list').innerHTML = "";
+
+    if (type === 'noun') {
+        // Nouns still show the full static table
+        showNounTable(enKey);
+    } else {
+        // Verbs jump to the Word Builder and auto-fill the input
+        const verbObj = verbs[enKey];
+        if (verbObj) {
+            // Scroll to the Word Builder section
+            document.querySelector('.sandbox-card').scrollIntoView({ behavior: 'smooth' });
+            
+            // Set the sandbox to 'verb' mode and fill the stem
+            const typeSelect = document.getElementById('test-type');
+            const inputField = document.getElementById('test-input');
+            
+            if (typeSelect && inputField) {
+                typeSelect.value = 'verb';
+                inputField.value = verbObj.stem;
+                
+                // Trigger the UI change so verb controls appear
+                toggleSandboxFields(); 
+                // Run an initial test so the user sees the basic form immediately
+                runSandboxTest();
+            }
+        }
+    }
+};
 
 window.updateRefSearch = function() {
     const term = document.getElementById('ref-search').value.toLowerCase();
@@ -283,26 +461,114 @@ window.showNounTable = function(enKey) {
         <div class="card fade-in">
             <h2>Noun Declension: ${enKey} (${data.root})</h2>
             <p>Class: <strong>${data.class.charAt(0).toUpperCase() + data.class.slice(1)}</strong></p>
-            <table class="grammar-table">
-                <thead>
-                    <tr>
-                        <th>Case</th>
-                        ${columns.map(col => `<th>${col.label}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${cases.map(c => `
+            <div class="table-container"><table class="grammar-table">
+                    <thead>
                         <tr>
-                            <td><strong>${c}</strong></td>
-                            ${columns.map(col => `<td>${window[c](data, col.id)}</td>`).join('')}
+                            <th>Case</th>
+                            ${columns.map(col => `<th>${col.label}</th>`).join('')}
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${cases.map(c => `
+                            <tr>
+                                <td><strong>${c}</strong></td>
+                                ${columns.map(col => `<td>${window[c](data, col.id)}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
     display.innerHTML = tableHtml;
     display.scrollIntoView({ behavior: 'smooth' });
+    window.NOM = (nounObj, num) => nounCaser.getNominative(nounObj, num);
+    window.ERG = (nounObj, num) => nounCaser.getErgative(nounObj, num);
+    window.ACC = (nounObj, num) => nounCaser.getAccusative(nounObj, num);
+    window.DAT = (nounObj, num) => nounCaser.getDative(nounObj, num);
+    window.GEN = (nounObj, num) => nounCaser.getGenitive(nounObj, num);
+    window.LOC = (nounObj, num) => nounCaser.getLocative(nounObj, num);
+    window.TRA = (nounObj, num) => nounCaser.getTransportative(nounObj, num);
+    window.ALL = (nounObj, num) => nounCaser.getAllative(nounObj, num);
+    window.ABL = (nounObj, num) => nounCaser.getAblative(nounObj, num);
+    window.INS = (nounObj, num) => nounCaser.getInstrumental(nounObj, num);
+    window.COM = (nounObj, num) => nounCaser.getComitative(nounObj, num);
+};
+
+window.showVerbTable = function(enKey) {
+    const data = verbs[enKey];
+    const display = document.getElementById('ref-display-area');
+    
+    // Config for the table rows/columns
+    const persons = ["1st inclusive", "1st exclusive", "2nd formal", "2nd informal", "3rd animate", "3rd inanimate"];
+    const numbers = ["singular", "dual", "paucal", "plural"];
+    const modalKeys = Object.keys(verbConjugator.modals);
+
+    let tableHtml = `
+        <div class="card fade-in">
+            <h2>Verb Conjugation: ${enKey} (Stem: ${data.stem})</h2>
+            
+            <div class="table-controls">
+                <label>Select Modal Pattern:</label>
+                <select id="modal-selector" onchange="updateVerbTableDisplay('${enKey}')">
+                    ${modalKeys.map(m => `<option value="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('')}
+                </select>
+                
+                <label style="margin-left: 20px;">
+                    <input type="checkbox" id="interrogative-toggle" onchange="updateVerbTableDisplay('${enKey}')"> Interrogative Mode
+                </label>
+            </div>
+
+            <div id="verb-table-container">
+                </div>
+        </div>
+    `;
+    
+    display.innerHTML = tableHtml;
+    updateVerbTableDisplay(enKey);
+    display.scrollIntoView({ behavior: 'smooth' });
+};
+
+window.updateVerbTableDisplay = function(enKey) {
+    const verbObj = verbs[enKey];
+    const container = document.getElementById('verb-table-container');
+    const selectedModal = document.getElementById('modal-selector').value;
+    const isInterrogative = document.getElementById('interrogative-toggle').checked;
+
+    const persons = ["1st inclusive", "1st exclusive", "2nd formal", "2nd informal", "3rd animate", "3rd inanimate"];
+    const numbers = ["singular", "dual", "paucal", "plural"];
+
+    let html = `
+        <table class="grammar-table">
+            <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Singular</th>
+                    <th>Dual</th>
+                    <th>Paucal</th>
+                    <th>Plural</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${persons.map(p => `
+                    <tr>
+                        <td><strong>${p}</strong></td>
+                        ${numbers.map(n => {
+                            // Determine vClass based on person
+                            const vClass = p.includes("animate") || p.includes("1st") || p.includes("2nd") ? "animate" : "inanimate";
+                            
+                            const form = verbConjugator.conjugate(verbObj, vClass, p, n, "present perfective", {
+                                modal: selectedModal,
+                                interrogative: isInterrogative
+                            });
+                            return `<td>${form}</td>`;
+                        }).join('')}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    container.innerHTML = html;
 };
 
 // Function to show the info popup
@@ -397,13 +663,17 @@ function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     
     if (match) {
         if (match.type === 'noun') {
-                info = `En: ${match.en} | ${match.data.class}`;
+                const d = match.details;
+                const grammarStr = d ? ` (${d.case} ${d.number})` : "";
+                const className = match.data.class ? match.data.class.charAt(0).toUpperCase() + match.data.class.slice(1) : "";
+                
+                info = `En: ${match.en} | ${className}${grammarStr}`;
             } 
             else if (match.type === 'verb') {
-                // Show the specific conjugation details
                 const d = match.details;
                 const detailStr = d ? ` (${d.person} ${d.number} ${d.tense})` : "";
-                info = `Verb: ${match.en}${detailStr}`;
+                const englishName = match.en || (match.data && match.data.en) || "Unknown";
+                info = `Verb: ${englishName}${detailStr}`;
             } 
             else if (match.type === 'number') {
                 // Show the digit value for Tvaali numbers
@@ -458,7 +728,6 @@ function parseTvaaliNumber(str) {
     }
     return total;
 }
-
 
 // Check if a lesson has been shuffled
 function renderSortingModule(module) {
@@ -991,7 +1260,6 @@ function markWordsAsSeen() {
         });
     }
 }
-
 
 // Check answer function
 function checkAnswer(questionsToUse) {

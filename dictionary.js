@@ -4,40 +4,40 @@
 
 const nouns={
     // Animate
-    woman:  {root:"sidhi", class:"animate" },
-    man:    {root: "oroo", class: "animate"},
-    fire:   {root: "aahvuu", class: "animate" },
-    bird:   {root:"djaavuum",class:"animate"},
-    cat:    {root:"rjiimai",class:"animate"},
-    name:   {root:"naama",class:"animate"},
-    animal: {root: "tospee", class:"animate"},
-    cattle: {root: "nurjo", class:"animate"},
-    child:  {root:"sevaan", class: "animate"},
-    eye:    {root:"taaram", class: "animate"},
-    river: {root:"nam", class:"animate"},
-    elder:  {root:"mamdoo", class:"animate"},
-    warrior:{root:"tarkai", class:"animate"},
-    dog:    {root:"kjooma", class:"animate"},
-    snake:  {root:"ruveethi", class:"animte"},
-    fish:   {root:"aalhu", class: "animate"},
-    spirit: {root:"nithoo", class:"animate"},
+    woman:  {en: "woman",       root:"sidhi",       class:"animate" },
+    man:    {en: "man",         root: "oroo",       class: "animate"},
+    fire:   {en: "fire",        root: "aahvuu",     class: "animate" },
+    bird:   {en: "bird",        root:"djaavuum",    class:"animate"},
+    cat:    {en: "cat",         root:"rjiimai",     class:"animate"},
+    name:   {en: "name",        root:"naama",       class:"animate"},
+    animal: {en: "animal",      root: "tospee",     class:"animate"},
+    cattle: {en: "cattle",      root: "nurjo",      class:"animate"},
+    child:  {en: "child",       root:"sevaan",      class: "animate"},
+    eye:    {en: "eye",         root:"taaram",      class: "animate"},
+    river:  {en: "river",       root:"nam",         class:"animate"},
+    elder:  {en: "elder",       root:"mamdoo",      class:"animate"},
+    warrior:{en: "warrior",     root:"tarkai",      class:"animate"},
+    dog:    {en: "dog",         root:"kjooma",      class:"animate"},
+    snake:  {en: "snake",       root:"ruveethi",    class:"animte"},
+    fish:   {en: "fish",        root:"aalhu",       class: "animate"},
+    spirit: {en: "spirit",      root:"nithoo",      class:"animate"},
 
 
     // Inanimate
-    water:  {root: "aaloo", class: "inanimate" },
-    stone:  {root:"irni",class:"inanimate"},
-    sun:    {root:"nedhaan",class:"inanimate"},
-    grass:  {root:"nimiir",class:"inanimate"},
-    earth:  {root:"araantho",class:"inanimate"},
-    snow:  {root:"tsiipli",class:"inanimate"},
+    water:  {en: "water",       root: "aaloo",      class: "inanimate" },
+    stone:  {en: "stone",       root:"irni",        class:"inanimate"},
+    sun:    {en: "sun",         root:"nedhaan",     class:"inanimate"},
+    grass:  {en: "grass",       root:"nimiir",      class:"inanimate"},
+    earth:  {en: "earth",       root:"araantho",    class:"inanimate"},
+    snow:   {en: "snow",        root:"tsiipli",     class:"inanimate"},
     
 
     // Abstract
-    silence: { root: "muuna", class: "abstract" },
-    justice: { root: "raatvu", class: "abstract" },
-    cold:    { root: "torvoo",  class: "abstract" },
-    truth:   { root: "eemda",  class: "abstract" },
-    sleep:   { root: "iilhan", class: "abstract" },
+    silence: {en: "silence",    root: "muuna",     class: "abstract" },
+    justice: {en: "justice",    root: "raatvu",    class: "abstract" },
+    cold:    {en: "cold",       root: "torvoo",    class: "abstract" },
+    truth:   {en: "truth",      root: "eemda",     class: "abstract" },
+    sleep:   {en: "slepp",      root: "iilhan",    class: "abstract" },
 };
 
 /* ==========================================================================
@@ -45,16 +45,16 @@ const nouns={
    ========================================================================== */
 
 const verbs={
-    love:   {stem: "aim", trans: true },
-    laugh:  {stem: "aahan", trans: false },
-    sleep:  {stem: "iilha", trans: false },
-    see:    {stem:"roshuu", trans:true},
-    fall:   {stem:"liin", trans:false},
-    hit:    {stem:"tarkaa", trans:true},
-    carve:  {stem:"baintras", trans:true},
-    eat:    {stem:"iihes", trans:true},
-    become: {stem:"taan", trans:true},
-    fight:  {stem:"taisuus",trans:true},
+    love:   {stem: "aim",       trans: true},
+    laugh:  {stem: "aahan",     trans: false},
+    sleep:  {stem: "iilha",     trans: false},
+    see:    {stem:"roshuu",     trans:true},
+    fall:   {stem:"liin",       trans:false},
+    hit:    {stem:"tarkaa",     trans:true},
+    carve:  {stem:"baintras",   trans:true},
+    eat:    {stem:"iihes",      trans:true},
+    become: {stem:"taan",       trans:true},
+    fight:  {stem:"taisuus",    trans:true},
 };
 
 /* ==========================================================================
@@ -84,6 +84,9 @@ const numBases = {
     20736: "kuumi"
 };
 
+Object.entries(nouns).forEach(([key, value]) => value.en = key);
+Object.entries(verbs).forEach(([key, value]) => value.en = key);
+
 
 /* ==========================================================================
    VERB LOGIC
@@ -96,10 +99,10 @@ const V = (verbObj, nClass = "animate", person = null, number = "singular", tens
     const form = result.toLowerCase();
 
     tvaaliLookup[form] = {
-        en: verbObj.en,
+        en: verbObj.en || "Unknown",
         type: 'verb',
         data: verbObj,
-        details: { person, number, tense } // Used by the tooltip
+        details: { person, number, tense }
     };
 
     return result;
@@ -131,77 +134,175 @@ function ROOT(item) {
 
 const NOM = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
+    const result = nounCaser.getNominative(nounObj, number);
 
-    return nounCaser.getNominative(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "NOM", number: number }
+    };
+
+    return result;
 };
 const ERG = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
     // Split Ergative Logic:
     // If it's Animate, return the custom message instead of the root
+    let result;
     if (nounObj.class === "animate") {
-        return "N/A";
+        result = "N/A";
     }
 
     // For Inanimate and Abstract, proceed with the suffix logic
     if (nounObj.class === "inanimate" || nounObj.class === "abstract") {
-        return nounCaser.getErgative(nounObj, number);
+        result = nounCaser.getErgative(nounObj, number);
     }
-    
-    return nounObj.root; 
+
+    if (result !== "N/A") {
+        tvaaliLookup[result.toLowerCase()] = {
+            en: nounObj.en,
+            type: 'noun',
+            data: nounObj,
+            details: { case: "ERG", number: number }
+        };
+    }
+
+    return result;
 };
 const ACC = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
     // Rule: Objects of Animates are Accusative; Inanimates are Nominative (Root)
+    let result;
     if (nounObj.class === "animate") {
-        return nounCaser.getAccusative(nounObj, number);
+        result = nounCaser.getAccusative(nounObj, number);
+    } else {
+        result = nounObj.root; // Inanimates stay in Nominative as objects
     }
-    return nounObj.root; // Inanimates stay in Nominative as objects
+
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "ACC", number: number }
+    };
+
+    return result;
 };
 const DAT = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getDative(nounObj, number);
+    const result = nounCaser.getDative(nounObj, number);
+
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "DAT", number: number }
+    };
+
+    return result;
 };
 const GEN = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getGenitive(nounObj, number);
+    const result = nounCaser.getGenitive(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "GEN", number: number }
+    };
+
+    return result;
 };
 const LOC = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getLocative(nounObj, number);
+    const result = nounCaser.getLocative(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "LOC", number: number }
+    };
+
+    return result;
 };
 const TRA = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
     if (nounObj.class === "abstract") { return "N/A"}
 
-    return nounCaser.getTransportative(nounObj, number);
+    const result = nounCaser.getTransportative(nounObj, number);
+    if (result !== "N/A") {
+        tvaaliLookup[result.toLowerCase()] = {
+            en: nounObj.en,
+            type: 'noun',
+            data: nounObj,
+            details: { case: "ERG", number: number }
+        };
+    }
+
+    return result;
 };
 const ALL = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
     if (nounObj.class === "abstract") { return "N/A"}
 
-    return nounCaser.getAllative(nounObj, number);
+    const result = nounCaser.getAllative(nounObj, number);
+    if (result !== "N/A") {
+        tvaaliLookup[result.toLowerCase()] = {
+            en: nounObj.en,
+            type: 'noun',
+            data: nounObj,
+            details: { case: "ERG", number: number }
+        };
+    }
+
+    return result;
 };
 const ABL = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getAblative(nounObj, number);
+    const result = nounCaser.getAblative(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "ABL", number: number }
+    };
+
+    return result;
 };
 const INS = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getInstrumental(nounObj, number);
+    const result = nounCaser.getInstrumental(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "INS", number: number }
+    };
+
+    return result;
 };
 const COM = (nounObj, number = "singular") => {
     if (!nounObj || !nounObj.root) return "[Unknown]";
 
-    return nounCaser.getLocative(nounObj, number);
+    const result = nounCaser.getComitative(nounObj, number);
+    tvaaliLookup[result.toLowerCase()] = {
+        en: nounObj.en,
+        type: 'noun',
+        data: nounObj,
+        details: { case: "COM", number: number }
+    };
+
+    return result;
 };
 
 /* ==========================================================================
@@ -209,43 +310,30 @@ const COM = (nounObj, number = "singular") => {
    ========================================================================== */
 
 const NUM = (val, type = "cardinal") => {
-    // Safety check for 0
-    if (val === 0) return numbers[0][type];
+    if (val === 0) {
+        const res = numbers[0][type];
+        tvaaliLookup[res.toLowerCase()] = { type: 'number', value: 0, en: "0" };
+        return res;
+    }
 
-    // Internal recursive builder (always works in cardinals)
     const buildValue = (n) => {
         if (n < 12) return numbers[n].cardinal;
-
-        // Find the largest base (20736, 1728, 144, or 12)
-        const divisor = Object.keys(numBases)
-            .map(Number)
-            .sort((a, b) => b - a)
-            .find(p => p <= n);
-
+        const divisor = Object.keys(numBases).map(Number).sort((a, b) => b - a).find(p => p <= n);
         const count = Math.floor(n / divisor);
         const remainder = n % divisor;
-
-        // "count-base" (e.g., "us-tvuum")
         let part = `${buildValue(count)}-${numBases[divisor]}`;
-        
-        if (remainder > 0) {
-            part += `-${buildValue(remainder)}`;
-        }
+        if (remainder > 0) part += `-${buildValue(remainder)}`;
         return part;
     };
 
     const fullCardinal = buildValue(val);
-
-    if (type === "cardinal") return fullCardinal;
     let finalString = fullCardinal;
 
-    // --- Ordinal Logic ---
-    // Rule: Take the full cardinal string, find the last word, and swap it for the ordinal
+    // Logic for ordinals
     if (type === "ordinal") {
         const parts = fullCardinal.split("-");
         const lastWord = parts.pop();
-        let ordinalSuffix = lastWord + "ar"; // Default fallback
-
+        let ordinalSuffix = lastWord + "ar";
         for (let k in numbers) {
             if (numbers[k].cardinal === lastWord) {
                 ordinalSuffix = numbers[k].ordinal;
@@ -255,7 +343,7 @@ const NUM = (val, type = "cardinal") => {
         finalString = [...parts, ordinalSuffix].join("-");
     }
     
-    tvaaliLookup[result.toLowerCase()] = {
+    tvaaliLookup[finalString.toLowerCase()] = {
         type: 'number',
         value: val,
         en: val.toString()
@@ -271,32 +359,51 @@ function generateMorphologyMap() {
     // Map Nouns
     Object.entries(nouns).forEach(([en, data]) => {
         const numbers = ["singular", "dual", "paucal", "plural"];
-        const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC"];
+        const cases = ["NOM", "ACC", "ERG", "DAT", "GEN", "LOC", "TRA", "ALL", "ABL", "INS", "COM"];
         
-        // Add the root itself
-        lookup[data.root.toLowerCase()] = { en, type: 'noun', data };
+        const rootForm = data.root.toLowerCase();
+        if (!lookup[rootForm]) {
+            lookup[rootForm] = { en, type: 'noun', data, details: { case: "Root", number: "singular" } };
+        }
 
         cases.forEach(c => {
             numbers.forEach(n => {
-                // Use your existing NOM/ACC/ERG functions
                 const form = window[c](data, n).toLowerCase();
-                lookup[form] = { en, type: 'noun', data };
+                
+                // ONLY save if this word hasn't been seen yet
+                // This preserves the most "basic" case (usually NOM or ACC)
+                if (!lookup[form]) {
+                    lookup[form] = { 
+                        en, 
+                        type: 'noun', 
+                        data,
+                        details: { case: c, number: n } 
+                    };
+                }
             });
         });
     });
 
     // Map Verbs
     Object.entries(verbs).forEach(([en, data]) => {
+        data.en = en; 
+
         const people = ["1st inclusive", "1st exclusive", "2nd formal", "2nd informal", "3rd animate", "3rd inanimate"];
         const numbers = ["singular", "dual", "paucal", "plural"];
-        const tenses = ["present perfective", "past perfective", "future perfective"]; // Add core tenses
+        const tenses = ["present perfective", "past perfective", "future perfective"]; 
 
         people.forEach(p => {
             const nClass = p.split(' ').pop();
             numbers.forEach(num => {
                 tenses.forEach(t => {
                     const form = verbConjugator.conjugate(data, nClass, p, num, t).toLowerCase();
-                    lookup[form] = { en, type: 'verb', data };
+                    
+                    lookup[form] = { 
+                        en, 
+                        type: 'verb', 
+                        data,
+                        details: { person: p, number: num, tense: t } // <--- Added this
+                    };
                 });
             });
         });
@@ -304,5 +411,3 @@ function generateMorphologyMap() {
 
     return lookup;
 }
-
-tvaaliLookup = generateMorphologyMap();

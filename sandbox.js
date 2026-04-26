@@ -78,19 +78,27 @@ window.runSandboxTest = function() {
         resultDisplay.innerText = result;
     } 
     else if (type === 'verb') {
-        const verbObj = verbs[input];
-        if (!verbObj) return resultDisplay.innerText = `Verb "${input}" not found!`;
+        const verbObj = verbs[input] || Object.values(verbs).find(v => v.stem === input);
+        if (!verbObj) return resultDisplay.innerText = "Verb not found";
+
+        const options = {
+            passive: document.getElementById('test-passive').checked,
+            causative: document.getElementById('test-causative').checked,
+            interrogative: document.getElementById('test-interrogative').checked,
+            negated: document.getElementById('test-negated').checked,
+            modal: document.getElementById('test-modal').value
+        };
 
         const person = document.getElementById('test-person').value;
-        const num = document.getElementById('test-verb-number').value; // Get number from verb selector
+        const number = document.getElementById('test-verb-number').value;
+        const tense = document.getElementById('test-tense').value;
         const aspect = document.getElementById('test-aspect').value;
-        const tenseBase = document.getElementById('test-tense').value;
-        
-        const fullTense = `${tenseBase} ${aspect}`;
-        const nClass = person.split(' ').pop(); 
 
-        // Pass 'num' into the verb function instead of hardcoded "singular"
-        resultDisplay.innerText = V(verbObj, nClass, person, num, fullTense);
+        // Determine vClass (simplified)
+        const vClass = person.includes("inanimate") ? "inanimate" : "animate";
+
+        const result = verbConjugator.conjugate(verbObj, vClass, person, number, `${tense} ${aspect}`, options);
+        resultDisplay.innerText = result;
     }
 };
 

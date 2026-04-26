@@ -116,7 +116,7 @@ const nounCaser = {
         const ending = this.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
 
-        if (nClass === "animate") return root;
+        if (nClass === "animate") return "N/A";
 
         if (nClass === "inanimate") {
             const suffix = (number === "singular") ? "oot" : "oo";
@@ -215,7 +215,7 @@ const nounCaser = {
 
         const suffixes = {
             'n': { anim: ["iir", "iis", "iit", "iik"], inan: ["iit", "oor"], abs: "" },
-            'vowel': { anim: ["iir", "iis", "iit", "iik"], inan: ["iit", "iir"], abs: "" }
+            'vowel': { anim: ["-iir", "-iis", "-iit", "-iik"], inan: ["-iit", "-iir"], abs: "" }
         };
 
         let row = (ending === "longVowel" || ending === "vowel") ? suffixes.vowel : suffixes.n;

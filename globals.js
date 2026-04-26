@@ -7,3 +7,4 @@ let isCorrect = false;
 let completedSubLessons = JSON.parse(localStorage.getItem('tvaali_progress')) || [];
 let currentSubLessonIndex = 0;
 let tvaaliLookup = {};
+let isTvToEn = false;

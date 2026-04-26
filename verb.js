@@ -77,7 +77,9 @@ const verbConjugator = {
         return result;
     },
 
-    // 1. Prefix pronoun
+   /* ==========================================================================
+   SUBJECT MARKER
+   ========================================================================== */
     getPronoun: function(vClass, person, formality, number) {
         const cleanPerson = person.split(" ")[0];
 
@@ -131,22 +133,31 @@ const verbConjugator = {
         return ""; 
     },
 
-    applyPrefixPhonology: function(prefix, stem) {
-        if (!prefix) return stem;
-        const vowels = "aeiouy";
-        const pLastV = this.getVowelCluster(prefix, false);
-        const sFirstV = this.getVowelCluster(stem, true);
-
-        if (vowels.includes(pLastV[0]) && vowels.includes(sFirstV[0])) {
-            const preceding = prefix.slice(0, -pLastV.length); 
-            const combined = this.combineVowels(pLastV, sFirstV, preceding);
-            
-            return prefix.slice(0, -pLastV.length) + combined + stem.slice(sFirstV.length);
-        }
-        return prefix + stem;
+   /* ==========================================================================
+   PASSIVE
+   ========================================================================== */
+    getPassive: function(isPassive) {
+        return isPassive ? "te" : "";
     },
 
-    // 2. Suffix tense
+    /* ==========================================================================
+   APPLICATIVE
+   ========================================================================== */
+    getApplicative: function(type) {
+        const apps = { benefactive: "dhe", instrumental: "hi", directive: "ba", comitative: "mi", ablative: "du" };
+        return apps[type] || "";
+    },
+
+    /* ==========================================================================
+   DETRANSITIVE
+   ========================================================================== */
+    getDetransitive: function(active) {
+        return active ? "tsu" : "";
+    },
+
+    /* ==========================================================================
+   TENSE
+   ========================================================================== */
     getTense: function(fullTense) {
         if (!fullTense) return "";
         
@@ -178,6 +189,85 @@ const verbConjugator = {
         return chart[aspect]?.[time] ?? "";
     },
 
+    /* ==========================================================================
+   CONVERB
+   ========================================================================== */
+   getConverb: function(type) {
+        const apps = {imperfective: "tho", perfective: "as", causal: "ri", purposive: "thohi", concessive: "aam", terminative: "dho", resultative: "oku", conditional: "iime", preparative: "ves", consecutive: "ire", immediative: "", sequencial: "lus"};
+        return aoos[type] || "";
+   },
+
+    /* ==========================================================================
+   MODAL
+   ========================================================================== */
+   modals: {
+        indicative:  { base: "",      interrogative: "ree" },
+        speculative: { base: "chaa",  interrogative: "charee" },
+        deductive:   { base: "niir",  interrogative: "niree" },
+        assumptive:  { base: "maan",  interrogative: "maree" },
+        abilitive:   { base: "staa",  interrogative: "staree" },
+        volitive:    { base: "poo",   interrogative: "poree" },
+        permissive:  { base: "par",   interrogative: "per" },
+        obligative:  { base: "nuupar", interrogative: "nupeer" },
+        commissive:  { base: "taa",   interrogative: "taree" },
+        optative:    { base: "zoku",  interrogative: "zokree" },
+        conditional: { base: "huu",   interrogative: "huree" },
+        honorific:   { base: "maida", interrogative: "mairee" }
+    },
+   getModal: function(type, isInterrogative) {
+        const modal = this.modals[type];
+        if (!modal) return "";
+        return isInterrogative ? modal.interrogative : modal.base;
+    },
+
+    /* ==========================================================================
+   CAUSATIVE
+   ========================================================================== */
+    getCausative: function(isCausative) {
+        return isCausative ? "so" : "";
+    },
+
+    /* ==========================================================================
+   REFLEXIVE
+   ========================================================================== */
+    getReflexive: function(reflexive) {
+        return reflexive ? "raa" : "";
+    },
+
+    /* ==========================================================================
+   EVIDENTIAL
+   ========================================================================== */
+    getEvidential: function(type) {
+        const apps = { reportative: "vigaa", inferential: "iwosaa", dubitative: "vigigaa"};
+        return apps[type] || "";
+    },
+
+    /* ==========================================================================
+   NEGATION
+   ========================================================================== */
+    getNegation: function(negated) {
+        return negated ? "tai" : "";
+    },
+
+    /* ==========================================================================
+   PHONOLOGY
+   ========================================================================== */
+
+    applyPrefixPhonology: function(prefix, stem) {
+        if (!prefix) return stem;
+        const vowels = "aeiouy";
+        const pLastV = this.getVowelCluster(prefix, false);
+        const sFirstV = this.getVowelCluster(stem, true);
+
+        if (vowels.includes(pLastV[0]) && vowels.includes(sFirstV[0])) {
+            const preceding = prefix.slice(0, -pLastV.length); 
+            const combined = this.combineVowels(pLastV, sFirstV, preceding);
+            
+            return prefix.slice(0, -pLastV.length) + combined + stem.slice(sFirstV.length);
+        }
+        return prefix + stem;
+    },
+
     applySuffixPhonology: function(stem, suffix) {
         if (!suffix) return stem;
         const vowels = "aeiouy";
@@ -193,21 +283,80 @@ const verbConjugator = {
         return stem + suffix;
     },
 
-    // 3. THE MASTER BUILDER
-    conjugate: function(verbObj, vClass, person, number, fullTense) {
-        const stem = verbObj.stem;
-        let res = stem;
+/* ==========================================================================
+       THE MASTER BUILDER
+       Order: Subject - Passive - Applicative - Detransative - STEM - 
+              Tense - Converb - Modal - Causative - Reflexive - 
+              Evidential - Negation
+       ========================================================================== */
+    conjugate: function(verbObj, vClass, person, number, fullTense, options = {}) {
+        let res = verbObj.stem;
 
-        // 1. Only apply prefix if person is actually provided
-        if (person) {
-            const rawPrefix = this.getPronoun(vClass, person, "informal", number);
-            res = this.applyPrefixPhonology(rawPrefix, stem);
+        // --- 1. PREFIX CHAIN (Working outwards from the Stem) ---
+
+        // Detransitive
+        if (options.detransitive) {
+            res = this.applyPrefixPhonology(this.getDetransitive(true), res);
         }
 
-        // 2. Get the suffix (this will now look for "infinitive" in your chart)
-        const rawSuffix = this.getTense(fullTense);
-        
-        // 3. Apply suffix phonology (handles vowel clashes like 'aim' + 'te')
-        return this.applySuffixPhonology(res, rawSuffix);
+        // Applicative
+        if (options.applicative) {
+            const appSuffix = this.getApplicative(options.applicative);
+            res = this.applyPrefixPhonology(appSuffix, res);
+        }
+
+        // Passive (Suffix "te" used as a prefix per instructions)
+        if (options.passive) {
+            res = this.applyPrefixPhonology(this.getPassive(true), res);
+        }
+
+        // Subject Marker (The outer-most prefix)
+        if (person) {
+            const formality = options.formality || "informal";
+            const subPrefix = this.getPronoun(vClass, person, formality, number);
+            res = this.applyPrefixPhonology(subPrefix, res);
+        }
+
+        // --- 2. SUFFIX CHAIN (Working outwards from the Stem) ---
+
+        // Tense
+        const tenseSuf = this.getTense(fullTense);
+        res = this.applySuffixPhonology(res, tenseSuf);
+
+        // Converb
+        if (options.converb) {
+            const convSuf = this.getConverb(options.converb);
+            res = this.applySuffixPhonology(res, convSuf);
+        }
+
+        // Modal (Includes Interrogative logic)
+        if (options.modal || options.interrogative) {
+            const modalType = options.modal || "indicative";
+            const modalSuf = this.getModal(modalType, options.interrogative);
+            res = this.applySuffixPhonology(res, modalSuf);
+        }
+
+        // Causative
+        if (options.causative) {
+            res = this.applySuffixPhonology(res, this.getCausative(true));
+        }
+
+        // Reflexive
+        if (options.reflexive) {
+            res = this.applySuffixPhonology(res, this.getReflexive(true));
+        }
+
+        // Evidential
+        if (options.evidential) {
+            const evidSuf = this.getEvidential(options.evidential);
+            res = this.applySuffixPhonology(res, evidSuf);
+        }
+
+        // Negation
+        if (options.negated) {
+            res = this.applySuffixPhonology(res, this.getNegation(true));
+        }
+
+        return res;
     },
-};
+}
