@@ -1,5 +1,4 @@
 newWords fix!
-verb declension and total structure map
 
 gnomic?
 

@@ -67,29 +67,53 @@ window.updateDictionaryResults = function() {
     const resultsDiv = document.getElementById('dict-results');
     if (!resultsDiv) return;
 
-    const nounsList = Object.entries(nouns).map(([en, data]) => ({ en, tv: data.root, type: 'noun' }));
-    const verbsList = Object.entries(verbs).map(([en, data]) => ({ en, tv: data.stem, type: 'verb' }));
-    
-    let combined = [...nounsList, ...verbsList].sort((a, b) => 
+    // 1. Gather all lists into a single searchable array
+    const combined = [
+        ...Object.entries(nouns).map(([en, d]) => ({ en, tv: d.root, type: 'noun' })),
+        ...Object.entries(verbs).map(([en, d]) => ({ en, tv: d.stem, type: 'verb' })),
+        ...Object.entries(adjectives).map(([en, d]) => ({ en, tv: d.tv, type: 'adj', adjType: d.type })),
+        ...Object.entries(adverbs).map(([en, tv]) => ({ en, tv: tv, type: 'adv' })),
+        ...Object.entries(postpositions).map(([en, d]) => ({ en, tv: d.tv, type: 'post' })),
+        ...Object.entries(conjunctions).map(([en, tv]) => ({ en, tv, type: 'conj' }))
+    ];
+
+    // 2. Sort alphabetically based on current mode
+    combined.sort((a, b) => 
         isTvToEn ? a.tv.localeCompare(b.tv) : a.en.localeCompare(b.en)
     );
 
-    // If there is a search term, filter it. If NOT, show the whole alphabetical list.
+    // 3. Keep your logic: filter if term >= 2, otherwise show all
     const filtered = term.length >= 2 
-        ? combined.filter(item => isTvToEn ? item.tv.toLowerCase().includes(term) : item.en.toLowerCase().includes(term))
-        : combined; // Show all if search is empty
+        ? combined.filter(item => isTvToEn 
+            ? item.tv.toLowerCase().includes(term) 
+            : item.en.toLowerCase().includes(term))
+        : combined;
 
-    resultsDiv.innerHTML = filtered.map(item => `
-        <div class="modal-vocab-row">
-            <div class="vocab-left">
-                <span class="en-word">${isTvToEn ? item.tv : item.en}</span>
-                <span class="meta-tag tag-${item.type}">${item.type}</span>
+    // 4. Render with labels
+    resultsDiv.innerHTML = filtered.map(item => {
+        // Build extra info for Adjectives
+        let extraInfo = "";
+        if (item.type === 'adj') {
+            if (item.adjType === 'V') extraInfo = '<span class="info-tag">Verb-like</span>';
+            if (item.adjType === 'N') extraInfo = '<span class="info-tag">Noun-like</span>';
+            if (item.adjType === 'VN') extraInfo = '<span class="info-tag">Hybrid</span>';
+        }
+
+        return `
+            <div class="modal-vocab-row">
+                <div class="vocab-left">
+                    <span class="en-word" style="font-weight: bold; color: var(--primary-purple);">
+                        ${isTvToEn ? item.tv : item.en}
+                    </span>
+                    <span class="type-tag tag-${item.type}">${item.type}</span>
+                    ${extraInfo}
+                </div>
+                <div class="vocab-right">
+                    <span class="tvaali-text">${isTvToEn ? item.en : item.tv}</span>
+                </div>
             </div>
-            <div class="vocab-right">
-                <span class="tvaali-text">${isTvToEn ? item.en : item.tv}</span>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 };
 
 window.renderDictionary = function() {

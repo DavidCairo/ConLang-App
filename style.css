@@ -309,6 +309,35 @@ input[type="text"]:focus {
     border-radius: 10px;
 }
 
+/* Type Tags */
+.type-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-left: 10px;
+    color: white;
+}
+
+.tag-noun { background-color: var(--primary-purple); }
+.tag-verb { background-color: var(--primary-teal); }
+.tag-adj  { background-color: #e67e22; } /* Orange */
+.tag-adv  { background-color: #2ecc71; } /* Green */
+.tag-post { background-color: #34495e; } /* Dark Blue */
+.tag-conj { background-color: #9b59b6; } /* Amethyst Purple */
+
+/* Info Tags for Adjectives */
+.info-tag {
+    font-size: 0.65rem;
+    background: #eee;
+    color: #666;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 5px;
+    border: 1px solid #ddd;
+}
+
 /* ==========================================================================
    6. GRAMMAR TABLES & SCROLLING
    ========================================================================== */
