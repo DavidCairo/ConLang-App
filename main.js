@@ -67,50 +67,66 @@ window.updateDictionaryResults = function() {
     const resultsDiv = document.getElementById('dict-results');
     if (!resultsDiv) return;
 
-    // 1. Gather all lists into a single searchable array
-    const combined = [
-        ...Object.entries(nouns).map(([en, d]) => ({ en, tv: d.root, type: 'noun' })),
-        ...Object.entries(verbs).map(([en, d]) => ({ en, tv: d.stem, type: 'verb' })),
-        ...Object.entries(adjectives).map(([en, d]) => ({ en, tv: d.tv, type: 'adj', adjType: d.type })),
-        ...Object.entries(adverbs).map(([en, tv]) => ({ en, tv: tv, type: 'adv' })),
-        ...Object.entries(postpositions).map(([en, d]) => ({ en, tv: d.tv, type: 'post' })),
-        ...Object.entries(conjunctions).map(([en, tv]) => ({ en, tv, type: 'conj' }))
-    ];
+    if (term.length < 2) {
+        resultsDiv.innerHTML = '<div class="dictionary-hint">Type at least 2 letters to search...</div>';
+        return;
+    }
 
-    // 2. Sort alphabetically based on current mode
-    combined.sort((a, b) => 
-        isTvToEn ? a.tv.localeCompare(b.tv) : a.en.localeCompare(b.en)
-    );
+    // 1. Filter raw lexicon
+    const matches = lexicon.filter(word => {
+        const inTv = word.tv.toLowerCase().includes(term);
+        const inEn = word.entries.some(e => e.senses.some(s => s.en.some(en => en.toLowerCase().includes(term))));
+        return isTvToEn ? inTv : inEn;
+    });
 
-    // 3. Keep your logic: filter if term >= 2, otherwise show all
-    const filtered = term.length >= 2 
-        ? combined.filter(item => isTvToEn 
-            ? item.tv.toLowerCase().includes(term) 
-            : item.en.toLowerCase().includes(term))
-        : combined;
+    // 2. Group by Tvaali word (The Oxford "Collapse")
+    const grouped = matches.reduce((acc, word) => {
+        if (!acc[word.tv]) acc[word.tv] = [];
+        acc[word.tv].push(word);
+        return acc;
+    }, {});
 
-    // 4. Render with labels
-    resultsDiv.innerHTML = filtered.map(item => {
-        // Build extra info for Adjectives
-        let extraInfo = "";
-        if (item.type === 'adj') {
-            if (item.adjType === 'V') extraInfo = '<span class="info-tag">Verb-like</span>';
-            if (item.adjType === 'N') extraInfo = '<span class="info-tag">Noun-like</span>';
-            if (item.adjType === 'VN') extraInfo = '<span class="info-tag">Hybrid</span>';
-        }
-
+    // 3. Render
+    resultsDiv.innerHTML = Object.values(grouped).map(group => {
+        const primaryTv = group[0].tv;
+        
         return `
-            <div class="modal-vocab-row">
-                <div class="vocab-left">
-                    <span class="en-word" style="font-weight: bold; color: var(--primary-purple);">
-                        ${isTvToEn ? item.tv : item.en}
-                    </span>
-                    <span class="type-tag tag-${item.type}">${item.type}</span>
-                    ${extraInfo}
+            <div class="oxford-card">
+                <div class="oxford-header">
+                    <span class="oxford-tv">${primaryTv}</span>
                 </div>
-                <div class="vocab-right">
-                    <span class="tvaali-text">${isTvToEn ? item.en : item.tv}</span>
-                </div>
+                ${group.map((word, idx) => `
+                    <div class="oxford-homonym-section">
+                        ${group.length > 1 ? `<small class="homonym-id">${idx + 1}</small>` : ''}
+                        ${word.entries.map(entry => {
+                            // ADJECTIVE MORPHOLOGY LOGIC
+                            let morphTag = "";
+                            if (entry.type === 'adjective' && entry.morph) {
+                                const morphClass = entry.morph === 'N' ? 'adj-type-n' : 'adj-type-v';
+                                morphTag = `<span class="info-tag ${morphClass}">(${entry.morph})</span>`;
+                            }
+
+                            return `
+                                <div class="oxford-entry">
+                                    <div class="entry-meta">
+                                        <span class="type-tag tag-${entry.type}">${entry.type}</span>
+                                        ${morphTag}
+                                        ${entry.class ? `<span class="class-tag">${entry.class}</span>` : ''}
+                                        ${entry.trans !== undefined ? `<span class="trans-tag">${entry.trans ? 'tr.' : 'intr.'}</span>` : ''}
+                                    </div>
+                                    <ol class="senses-list ${entry.senses.length === 1 ? 'single-sense' : ''}">
+                                        ${entry.senses.map(sense => `
+                                            <li class="sense-item">
+                                                <span class="en-definitions">${sense.en.join(', ')}</span>
+                                                <p class="definition-text">${sense.definition}</p>
+                                            </li>
+                                        `).join('')}
+                                    </ol>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `).join('<hr class="entry-divider">')}
             </div>
         `;
     }).join('');
@@ -144,7 +160,7 @@ window.renderDictionary = function() {
             </div>
         </div>
     `;
-}
+};
 
 // 4. The global toggle function
 window.toggleDictMode = function() {

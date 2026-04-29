@@ -68,7 +68,11 @@ const nounCaser = {
         // If suffix doesn't start with '-', it's a direct attachment
         if (!suffix.startsWith("-")) return root + suffix;
         // If it starts with '-', we drop the stem's final vowel(s) first
-        return root.slice(0, (endingType === "longVowel" ? -2 : -1)) + suffix.slice(1);
+        const cutLength = (endingType === "longVowel") ? -2 : -1;
+        const stem = root.slice(0, cutLength);
+        const actualSuffix = suffix.slice(1);
+        
+        return stem + actualSuffix;
     },
 
     _resolveFromTable: function(root, row, nClass, number, endingType) {
@@ -89,7 +93,10 @@ const nounCaser = {
 
     // CASE METHODS
     getNominative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
         const ending = TvaaliUtil.getEndingType(root);
         const suffixes = {
             vowel: { anim: ["", "-as", "-at", "-ak"], inan: ["-at", ""], abs: "" },
@@ -100,7 +107,12 @@ const nounCaser = {
     },
 
     getAccusative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
+
+        // Inanimate nouns are the same as nominative (the root)
         if (nClass !== "animate") return root; 
 
         const ending = TvaaliUtil.getEndingType(root);
@@ -133,12 +145,19 @@ const nounCaser = {
     },
 
     getErgative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
+
+        // Animate nouns do not have an Ergative case in this system
         if (nClass === "animate") return "N/A";
+
         const ending = TvaaliUtil.getEndingType(root);
 
         if (nClass === "inanimate") {
             const suffix = (number === "singular") ? "oot" : "oo";
+            // Consonants append, Vowels are replaced
             return (ending === "consonant") ? root + suffix : root.replace(/[aeiouy]+$/i, "") + suffix;
         }
 
@@ -148,11 +167,15 @@ const nounCaser = {
             const suffix = (ending === "consonant") ? (rowMap[last] || "noo") : "noo";
             return this._executeSuffix(root, suffix, ending);
         }
+        
         return root;
     },
 
     getDative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
         const suffixes = {
@@ -169,9 +192,14 @@ const nounCaser = {
     },
 
     getGenitive: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
+        
         const suffixes = {
             'n': { anim: ["on", "os", "ot", "ok"], inan: ["ot", "on"], abs: "on" },
             'm': { anim: ["on", "os", "ot", "ok"], inan: ["ot", "on"], abs: "-non" },
@@ -180,17 +208,25 @@ const nounCaser = {
             'vowel': { anim: ["-on", "-os", "-ot", "-ok"], inan: ["-ot", "-on"], abs: "non" },
             'longVowel': { anim: ["no", "so", "to", "ko"], inan: ["to", "no"], abs: "non" },
         };
+        
         const rowMap = { k: 'm', r: 's', t: 't' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? suffixes.vowel : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? suffixes.vowel : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
+                
         return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
     getLocative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = nounObj.class;
+
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
+        
         const suffixes = {
             'n': { anim: ["oi", "ois", "oit", "oik"], inan: ["oit", "oi"], abs: "oi" },
             'm': { anim: ["oi", "ois", "oit", "oik"], inan: ["oit", "oi"], abs: "-noi" },
@@ -198,15 +234,20 @@ const nounCaser = {
             'vowel': { anim: ["-oi", "-ois", "-oit", "-oik"], inan: ["-oit", "-oi"], abs: "noi" },
             'longVowel': { anim: ["noi", "soi", "toi", "koi"], inan: ["toi", "noi"], abs: "noi" }
         };
+        
         const rowMap = { k: 'm', t: 'm', r: 's' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? suffixes.vowel : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? suffixes.vowel : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
+                
         return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
     getTransportative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = (nounObj.entries && nounObj.entries[0].class) || nounObj.class;
+        if (!root || typeof root !== 'string') return "";
         const ending = TvaaliUtil.getEndingType(root);
         const suffixes = {
             'n': { anim: ["iir", "iis", "iit", "iik"], inan: ["iit", "oor"], abs: "" },
@@ -217,7 +258,12 @@ const nounCaser = {
     },
 
     getAllative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = nounObj.class;
+
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
         const suffixes = {
@@ -230,13 +276,18 @@ const nounCaser = {
         };
         const rowMap = { m: 'n', k: 'n', t: 'n', r: 'n' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? (suffixes[last] || suffixes.vowel) : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? (suffixes[last] || suffixes.vowel) : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
         return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
     getAblative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = nounObj.class;
+
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
         const suffixes = {
@@ -247,13 +298,18 @@ const nounCaser = {
         };
         const rowMap = { m: 'n', k: 'n', t: 'n', r: 'n' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? suffixes.vowel : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? suffixes.vowel : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
         return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
     getInstrumental: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = nounObj.class;
+
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
         const suffixes = {
@@ -265,13 +321,18 @@ const nounCaser = {
         };
         const rowMap = { k: 'm', t: 'm', r: 's' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? suffixes.vowel : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? suffixes.vowel : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
         return this._resolveFromTable(root, row, nClass, number, ending);
     },
 
     getComitative: function(nounObj, number = "singular") {
-        const { root, class: nClass } = nounObj;
+        if (!nounObj) return "";
+        const root = nounObj.tv || nounObj.root;
+        const nClass = nounObj.class;
+
+        if (!root || typeof root !== 'string') return "";
+
         const ending = TvaaliUtil.getEndingType(root);
         const last = root.slice(-1).toLowerCase();
         const suffixes = {
@@ -283,8 +344,8 @@ const nounCaser = {
         };
         const rowMap = { k: 'm', t: 'm', r: 's' };
         let row = (ending === "longVowel") ? suffixes.longVowel : 
-                  (ending === "vowel") ? suffixes.vowel : 
-                  (suffixes[rowMap[last] || last] || suffixes.n);
+                (ending === "vowel") ? suffixes.vowel : 
+                (suffixes[rowMap[last] || last] || suffixes.n);
         return this._resolveFromTable(root, row, nClass, number, ending);
     }
 };
@@ -465,8 +526,15 @@ const verbConjugator = {
               Tense - Converb - Modal - Causative - Reflexive - 
               Evidential - Negation
        ========================================================================== */
-    conjugate: function(verbObj, vClass, person, number, fullTense, options = {}) {
-        let res = verbObj.stem;
+    conjugate: function(stem, vClass, person, number, fullTense, options = {}) {
+        // console.log("%c --- Engine Input Check ---", "color: cyan; font-weight: bold");
+        // console.log("Stem:", stem);
+        // console.log("Class:", vClass);
+        // console.log("Person:", person);
+        // console.log("Tense:", fullTense);
+        // console.log("Options Object:", options);
+        let res = stem;
+        if (!res) return "";
 
         // --- 1. PREFIX CHAIN (Moving outwards from the Stem) ---
         // Detransitive
@@ -531,18 +599,51 @@ window.nounCaser = nounCaser;
 window.verbConjugator = verbConjugator;
 window.TvaaliUtil = TvaaliUtil;
 
-// 2. Map Case Shortcuts
-window.NOM = (obj, num) => nounCaser.getNominative(obj, num);
-window.ACC = (obj, num) => nounCaser.getAccusative(obj, num);
-window.ERG = (obj, num) => nounCaser.getErgative(obj, num);
-window.DAT = (obj, num) => nounCaser.getDative(obj, num);
-window.GEN = (obj, num) => nounCaser.getGenitive(obj, num);
-window.LOC = (obj, num) => nounCaser.getLocative(obj, num);
-window.TRA = (obj, num) => nounCaser.getTransportative(obj, num);
-window.ALL = (obj, num) => nounCaser.getAllative(obj, num);
-window.ABL = (obj, num) => nounCaser.getAblative(obj, num);
-window.INS = (obj, num) => nounCaser.getInstrumental(obj, num);
-window.COM = (obj, num) => nounCaser.getComitative(obj, num);
+const resolveNounCase = (caseMethod, item, number, caseLabel) => {
+    let wordObj = typeof item === 'string' ? findByEn(item) : item;
+    
+    if (!wordObj || !wordObj.tv) {
+        console.error(`Noun not found in lexicon: ${item}`);
+        return "[Unknown]";
+    }
+
+    // FIX: Include both 'tv' and 'root', and pass the full entries 
+    // so the Engine can find the class properly.
+    const nounInput = {
+        tv: wordObj.tv,
+        root: wordObj.tv,
+        class: wordObj.entries[0].class || "animate",
+        entries: wordObj.entries 
+    };
+
+    const result = nounCaser[caseMethod](nounInput, number);
+    
+    if (result === "N/A") return "N/A";
+
+    // Update the Tvaali Lookup for the UI
+    tvaaliLookup[result.toLowerCase()] = {
+        en: wordObj.entries[0].senses[0].en[0],
+        type: 'noun',
+        data: wordObj,
+        details: { case: caseLabel, number: number }
+    };
+
+    return result;
+};
+
+const bridge = (method, label) => (item, num) => resolveNounCase(method, item, num, label);
+
+window.NOM = bridge("getNominative", "NOM");
+window.ACC = bridge("getAccusative", "ACC");
+window.ERG = bridge("getErgative", "ERG");
+window.DAT = bridge("getDative", "DAT");
+window.GEN = bridge("getGenitive", "GEN");
+window.LOC = bridge("getLocative", "LOC");
+window.TRA = bridge("getTransportative", "TRA");
+window.ALL = bridge("getAllative", "ALL");
+window.ABL = bridge("getAblative", "ABL");
+window.INS = bridge("getInstrumental", "INS");
+window.COM = bridge("getComitative", "COM");
 window.CONJ = (...args) => verbConjugator.conjugate(...args);
 window.parseTvaaliNumber = (str) => TvaaliUtil.parseNumber(str);
 

@@ -27,28 +27,28 @@ const lesson2Data = {
                         note: "The new words are not in the dual!"
                 },
                 {
-                type: "vocabDrill",
-                title: "The First Duals",
-                description: "Translate these words.",
-                newWords: ["taaram", "nam", "mamdoo", "kjooma", "ruveethi", "tarkai", "nithoo", "aalhu"],
-                // newWords: ["nedhaan", "oroo", "rjiimai"],
-                questions: [
-                    { tv: NOM(nouns.man, "dual"), en: "two men" }, 
-                    // { tv: NOM("sun"), en: "sun" },
-                    { tv: NOM(nouns.cat,"dual"), en: "two cats" },
-                    { tv: NOM(nouns.fire,"dual"), en: "two fires" },
-                    // { tv: NOM("grass"), en: "grass"},
-                    { tv: NOM(nouns.name,"dual"), en: "two names"},
-                    { tv: NOM(nouns.woman,"dual"), en: "two women" },
-                    // { tv: NOM("water"), en: "water" },
-                    { tv: NOM(nouns.bird,"dual"), en: "two birds" },
-                    {tv: NOM(nouns.elder), en: "elder"},
-                    {tv: NOM(nouns.warrior), en: "warrior"},
-                    {tv: NOM(nouns.dog), en: "dog"},
-                    {tv: NOM(nouns.snake), en: "snake"},
-                    {tv: NOM(nouns.fish), en: "fish"},
-                    {tv: NOM(nouns.spirit), en: "spirit"},
-                ]
+                    type: "vocabDrill",
+                    title: "The First Duals",
+                    description: "Translate these words.",
+                    newWords: ["taaram", "nam", "mamdoo", "kjooma", "ruveethi", "tarkai", "nithoo", "aalhu"],
+                    // newWords: ["nedhaan", "oroo", "rjiimai"],
+                    questions: [
+                        Q("man", NOM, "dual"), 
+                        // { tv: NOM("sun"), en: "sun" },
+                        Q("cat", NOM, "dual"),
+                        Q("fire", NOM, "dual"),
+                        // { tv: NOM("grass"), en: "grass"},
+                        Q("name", NOM, "dual"),
+                        Q("woman", NOM, "dual"),
+                        // { tv: NOM("water"), en: "water" },
+                        Q("bird", NOM, "dual"),
+                        Q("elder", NOM),
+                        Q("warrior", NOM),
+                        Q("dog", NOM),
+                        Q("snake", NOM),
+                        Q("fish", NOM),
+                        Q("spirit", NOM),
+                    ]
                 },
                 {
                     type: "infoCard",
@@ -67,19 +67,19 @@ const lesson2Data = {
                     {
                         lessonId: 2,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                        tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                         english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                     },
                     {
                         lessonId: 2,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.woman, "dual") + " " + ACC(nouns.water) + " " + V(verbs.love, nouns.woman.class, "3rd", "dual", "perfective present"),
+                        tvaali: `${NOM(getWord("woman"), "dual")} ${ACC(getWord("water"))} ${V(getWord("love"), "animate", "3rd", "dual", "present perfective")}`,
                         english: ["the two women love water", "the two women love the water", "two women love water", "two women love the water"]
                     },
                     {
                         lessonId: 2,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.man, "dual") + " " + ACC(nouns.grass) + " " + V(verbs.see, nouns.man.class, "3rd", "dual", "perfective present"),
+                        tvaali: `${NOM(getWord("man"), "dual")} ${ACC(getWord("grass"))} ${V(getWord("see"), "animate", "3rd", "dual", "present perfective")}`,
                         english: ["the two men see grass", "the two men see the grass", "two men see grass", "two men see the grass"]
                     },
                     // {
@@ -113,37 +113,37 @@ const lesson2Data = {
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: ACC(nouns.woman, "dual") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                            tvaali: `${ACC(getWord("woman"), "dual")} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
                             english: ["i see the two women", "i see two women"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${ACC(getWord("eye"), "dual")} ${NUM(2)} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
                             english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.child) + " " + ACC(nouns.river, "dual") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${NOM(getWord("child"))} ${ACC(getWord("river"), "dual")} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
                             english: ["the child sees the two rivers", "the child sees two rivers"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.elder, "dual") + " " + ACC(nouns.dog, "dual") + " " + V(verbs.see, "animate", "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("elder"), "dual")} ${ACC(getWord("dog"), "dual")} ${V(getWord("see"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two elders see the two dogs", "two elders see two dogs", "the two elders see two dogs", "two elders see the two dogs"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.warrior) + " " + ACC(nouns.snake, "dual") + " " + V(verbs.fight, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${NOM(getWord("warrior"))} ${ACC(getWord("snake"), "dual")} ${V(getWord("fight"), "animate", "3rd", "singular", "present perfective")}`,
                             english: ["the warrior fights the two snakes", "a warrior fights the two snakes", "the warrior fights two snakes", "a warrior fights the two snakes"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.spirit) + " " + ACC(nouns.fish, "dual") + " " + V(verbs.love, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${NOM(getWord("spirit"))} ${ACC(getWord("fish"), "dual")} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`,
                             english: ["the spirit loves the two fish", "the spirit loves two fish", "a spirit loves the two fish", "a spirit loves two fish"]
                         },
                     ]
@@ -184,7 +184,7 @@ const lesson2Data = {
                     title: "New Words",
                     description: "Translate these words",
                     questions: [
-                        {tv: NOM(nouns.elder), en: "elder"}, // to do 
+                        Q("elder", NOM), // to do 
                     ]
                 },
                 {
@@ -206,7 +206,7 @@ const lesson2Data = {
                         {
                             lessonId: 2, // to do
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                         },
                     ]
@@ -232,7 +232,7 @@ const lesson2Data = {
                         {
                             lessonId: 2, // to do
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                         },
                     ]
@@ -256,7 +256,7 @@ const lesson2Data = {
                         {
                             lessonId: 2, // to do
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                         },
                     ]
@@ -278,7 +278,7 @@ const lesson2Data = {
                         {
                             lessonId: 2, // to do
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                         },
                     ]
@@ -299,7 +299,7 @@ const lesson2Data = {
                     title: "New Words",
                     description: "Translate these words",
                     questions: [
-                        {tv: NOM(nouns.elder), en: "elder"}, // to do 
+                        Q("elder", NOM), // to do  
                     ]
                 },
                 {
@@ -319,7 +319,7 @@ const lesson2Data = {
                         {
                             lessonId: 2, // to do
                             type: "tv_to_en",
-                            tvaali: NOM(nouns.woman, "dual") + " " + V(verbs.sleep, nouns.woman.class, "3rd", "dual", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["the two women sleep", "the two women are sleeping", "two women sleep", "two women are sleeping"]
                         },
                     ]
@@ -341,7 +341,7 @@ const lesson2Data = {
                     title: "New Words",
                     description: "Translate these words",
                     questions: [
-                        {tv: NOM(nouns.elder), en: "elder"}, // to do 
+                        Q("elder", NOM), // to do  
                     ]
                 },
                 {
@@ -359,13 +359,13 @@ const lesson2Data = {
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                         {
                             lessonId: 2,
                             type: "tv_to_en",
-                            tvaali: ACC(nouns.eye, "dual") + " " + NUM(2) + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                            tvaali: `${NOM(getWord("woman"), "dual")} ${V(getWord("sleep"), "animate", "3rd", "dual", "present perfective")}`,
                             english: ["she sees the two eyes", "she sees two eyes", "he sees the two eyes", "he sees two eyes"]
                         },
                     ]

@@ -299,14 +299,92 @@ input[type="text"]:focus {
     gap: 8px;
 }
 
-.modal-vocab-row {
+.oxford-card {
+    background: white;
+    border-left: 5px solid var(--primary-purple);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    text-align: left;
+}
+
+.oxford-header {
     display: flex;
-    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.oxford-tv {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-purple);
+    font-family: 'serif'; /* Optional: gives it a classic book feel */
+}
+
+.oxford-id {
+    font-size: 0.9rem;
+    color: #aaa;
+    font-weight: bold;
+}
+
+.entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
     align-items: center;
-    padding: 12px 15px;
-    background: #fdfdfd;
-    border: 1px solid #eee;
-    border-radius: 10px;
+}
+
+.class-tag, .trans-tag, .case-tag {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.case-tag {
+    color: #d35400;
+    font-weight: bold;
+    border: 1px solid #e67e22;
+}
+
+.senses-list {
+    list-style-type: decimal;
+    margin: 0;
+    padding-left: 25px;
+}
+
+.en-definitions {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.definition-text {
+    margin: 4px 0 10px 0;
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.sense-item::marker {
+    color: var(--primary-teal);
+    font-weight: bold;
+}
+
+.tag-adjective { 
+    background-color: #e67e22 !important; /* High-contrast Orange */
+    color: white !important; 
+}
+
+/* If a card only has one sense, we can hide the "1." marker via CSS */
+.single-sense {
+    list-style-type: none;
+    padding-left: 0;
 }
 
 /* Type Tags */
@@ -336,6 +414,20 @@ input[type="text"]:focus {
     border-radius: 4px;
     margin-left: 5px;
     border: 1px solid #ddd;
+}
+
+.adj-type-n {
+    color: var(--primary-purple) !important;
+    border: 1px solid var(--primary-purple) !important;
+    background: #f4f0ff;
+    font-weight: bold;
+}
+
+.adj-type-v {
+    color: var(--primary-teal) !important;
+    border: 1px solid var(--primary-teal) !important;
+    background: #e6fcfb;
+    font-weight: bold;
 }
 
 /* ==========================================================================

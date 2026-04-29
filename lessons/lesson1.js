@@ -139,11 +139,11 @@ const lesson1Data = {
             {
                 type: "vocabDrill",
                 title: "The Accusative",
-                description: "Translate these accusative forms. (The translation is the same as the nominative)",
+                description: "Translate these forms.",
                 questions: [
-                    { tv: ACC(nouns.woman), en: "woman" },
-                    { tv: ACC(nouns.man), en: "man" },
-                    { tv: ACC(nouns.fire), en: "fire" },
+                    Q("woman", ACC), 
+                    Q("man", ACC),   
+                    Q("fire", ACC)   
                 ]
             },
             {
@@ -159,12 +159,12 @@ const lesson1Data = {
                 title: "Inanimate Nouns",
                 description: "Translate the following accusative forms.",
                 questions: [
-                    {tv: ACC(nouns.sun), en: "sun"},
-                    {tv: ACC(nouns.grass), en: "grass"},
-                    {tv: ACC(nouns.water), en: "water"},
-                    { tv: ACC(nouns.woman), en: "woman" },
-                    { tv: ACC(nouns.man), en: "man" },
-                    { tv: ACC(nouns.fire), en: "fire" },
+                    Q("sun", ACC),
+                    Q("grass", ACC),
+                    Q("water",ACC),
+                    Q("woman", ACC), 
+                    Q("man", ACC),   
+                    Q("fire", ACC),
                 ]
             },
             {
@@ -181,16 +181,13 @@ const lesson1Data = {
                 title: "Recognition",
                 description: "Select the correct Tvaali translation for each word.",
                 questions: [
-                    { en: "man", tv: ROOT("man"), type: "en_to_tv" },
-                    { en: "sun", tv: ROOT("sun"), type: "en_to_tv" },
-                    { en: "cat", tv: ROOT("cat"), type: "en_to_tv" },
-                    { en: "grass", tv: ROOT("grass"), type: "en_to_tv" },
-                    { en: "name", tv: ROOT("name"), type: "en_to_tv" },
-                    { en: "fire", tv: ROOT("fire"), type: "en_to_tv" },
-                    { en: "bird", tv: ROOT("bird"), type: "en_to_tv" },
-                    { en: "water", tv: ROOT("water"), type: "en_to_tv" },
-                    { en: "woman", tv: ROOT("woman"), type: "en_to_tv" },
-                ]
+                        { ...Q("man", NOM), type: "en_to_tv" },
+                        { ...Q("sun", NOM), type: "en_to_tv" },
+                        { ...Q("cat", NOM), type: "en_to_tv" },
+                        { ...Q("grass", NOM), type: "en_to_tv" },
+                        { ...Q("fire", NOM), type: "en_to_tv" },
+                        { ...Q("woman", NOM), type: "en_to_tv" }
+                    ]
             },
         ]},
         // --- Sublesson 3 ---
@@ -215,12 +212,12 @@ const lesson1Data = {
                 description: "Translate these 3rd person verbs.",
                 newWords: ["aim", "iilha", "roshuu", "aahan", "liin", "tarkaa"],
                 questions: [
-                    {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: ["he loves", "she loves"]},
-                    {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: ["he sleeps", "she sleeps", "he is sleeping", "she is sleeping"]},
-                    {tv: V(verbs.see, "animate", "3rd", "singular", "perfective present"), en: ["he sees", "she sees", "he is seeing", "she is seeing"]},
-                    {tv: V(verbs.fall, "animate", "3rd", "singular", "perfective present"), en: ["he falls", "she falls", "he is falling", "she is falling"]},
-                    {tv: V(verbs.laugh, "animate", "3rd", "singular", "perfective present"), en: ["he laughs", "she laughs", "he is laughing", "she is laughing"]},
-                    {tv: V(verbs.hit, "animate", "3rd", "singular", "perfective present"), en: ["he hits", "she hits", "he is hitting", "she is hitting"]},
+                    VQ("love", "3rd", "singular", "perfective present"),
+                    VQ("sleep", "3rd", "singular", "perfective present"),
+                    VQ("see", "3rd", "singular", "perfective present"),
+                    VQ("fall", "3rd", "singular", "perfective present"),
+                    VQ("laugh", "3rd", "singular", "perfective present"),
+                    VQ("hit", "3rd", "singular", "perfective present"),
                 ]
             },
             {
@@ -237,12 +234,12 @@ const lesson1Data = {
                 title: "First Verbs",
                 description: "Translate these 1st person verbs.",
                 questions: [
-                    {tv: V(verbs.love, "animate", "1st", "singular", "perfective present"), en: "I love"},
-                    {tv: V(verbs.sleep, "animate", "1st", "singular", "perfective present"), en: ["I sleep", "I am sleeping"]},
-                    {tv: V(verbs.see, "animate", "1st", "singular", "perfective present"), en: ["I see", "I am seeing"]},
-                    {tv: V(verbs.laugh, "animate", "1st", "singular", "perfective present"), en: ["I laugh", " I am laughing"]},
-                    {tv: V(verbs.hit, "animate", "1st", "singular", "perfective present"), en: ["I hit", "I am hitting"]},
-                    {tv: V(verbs.fall, "animate", "1st", "singular", "perfective present"), en: ["I fall", "I am falling"]},
+                    VQ("love", "1st", "singular", "perfective present"),
+                    VQ("sleep", "1st", "singular", "perfective present"),
+                    VQ("see", "1st", "singular", "perfective present"),
+                    VQ("laugh", "1st", "singular", "perfective present"),
+                    VQ("hit", "1st", "singular", "perfective present"),
+                    VQ("fall", "1st", "singular", "perfective present"),
                 ]
             },
             {
@@ -260,12 +257,12 @@ const lesson1Data = {
                 title: "Stative vs Active",
                 description: "Decide if the verb is Transitive or Intransitive.",
                 words: [
-                    { word: verbs.see.stem, type: true},
-                    { word: verbs.love.stem, type: true},
-                    { word: verbs.sleep.stem, type: false},
-                    { word: verbs.hit.stem, type: true},
-                    { word: verbs.laugh.stem, type: false},
-                    { word: verbs.fall.stem, type: false},
+                    { word: ROOT("see") }, 
+                    { word: ROOT("love") },
+                    { word: ROOT("sleep") },
+                    { word: ROOT("hit") },
+                    { word: ROOT("laugh") },
+                    { word: ROOT("fall") },
                 ]
             },
             {
@@ -277,21 +274,21 @@ const lesson1Data = {
             },
             {
                 type: "multipleChoice",
-                title: "First Verbs",
+                title: "Final Test",
                 description: "Translate these verbs.",
                 questions: [
-                    {tv: V(verbs.love, "animate", "1st", "singular", "perfective present"), en: "I love", type: "en_to_tv"},
-                    {tv: V(verbs.sleep, "animate", "1st", "singular", "perfective present"), en: "I sleep", type: "en_to_tv"},
-                    {tv: V(verbs.see, "animate", "1st", "singular", "perfective present"), en: "I see", type: "en_to_tv"},
-                    {tv: V(verbs.laugh, "animate", "1st", "singular", "perfective present"), en: " I am laughing", type: "en_to_tv"},
-                    {tv: V(verbs.hit, "animate", "1st", "singular", "perfective present"), en: "I hit", type: "en_to_tv"},
-                    {tv: V(verbs.fall, "animate", "1st", "singular", "perfective present"), en: "I am falling", type: "en_to_tv"},
-                    {tv: V(verbs.love, "animate", "3rd", "singular", "perfective present"), en: "He/She loves", type: "en_to_tv"},
-                    {tv: V(verbs.sleep, "animate", "3rd", "singular", "perfective present"), en: "He/She sleeps", type: "en_to_tv"},
-                    {tv: V(verbs.see, "animate", "3rd", "singular", "perfective present"), en: "He/She sees", type: "en_to_tv"},
-                    {tv: V(verbs.fall, "animate", "3rd", "singular", "perfective present"), en: "she falls", type: "en_to_tv"},
-                    {tv: V(verbs.laugh, "animate", "3rd", "singular", "perfective present"), en: "she is laughing", type: "en_to_tv"},
-                    {tv: V(verbs.hit, "animate", "3rd", "singular", "perfective present"), en: "he hits", type: "en_to_tv"},
+                    { ...VQ("love", "1st", "singular", "perfective present"), type: "en_to_tv" },
+                    { ...VQ("sleep", "1st", "singular", "perfective present"), type: "en_to_tv" },
+                    { ...VQ("see", "3rd", "singular", "perfective present"), type: "en_to_tv" },
+                    { ...VQ("laugh", "3rd", "singular", "perfective present"), type: "en_to_tv" },
+                    { ...VQ("hit", "1st", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("fall", "1st", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("love", "3rd", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("sleep", "3rd", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("see", "3rd", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("fall", "3rd", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("laugh", "3rd", "singular", "present perfective"), type: "en_to_tv" },
+                    { ...VQ("hit", "3rd", "singular", "present perfective"), type: "en_to_tv" },
                 ]
             },
         ]},
@@ -320,31 +317,31 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.woman) + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        tvaali: `${NOM(getWord("woman"))} ${V(getWord("sleep"), "animate", "3rd", "singular", "present perfective")}`,
                         english: ["the woman sleeps", "the woman is sleeping"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.woman) + " " + ACC(nouns.water) + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        tvaali: `${NOM(getWord("woman"))} ${ACC(getWord("water"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`,
                         english: ["the woman loves water", "the woman loves the water"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.man) + " " + ACC(nouns.grass) + " " + V(verbs.see, nouns.man.class, "3rd", "singular", "perfective present"),
+                        tvaali: `${NOM(getWord("man"))} ${ACC(getWord("grass"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
                         english: ["the man sees grass", "the man sees the grass"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ACC(nouns.woman, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                        tvaali: `${ACC(getWord("woman"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
                         english: "i see the woman"
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ACC(nouns.fire, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
+                        tvaali: `${ACC(getWord("fire"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
                         english: ["he sees the fire", "she sees the fire"]
                     },
                 ]
@@ -364,33 +361,48 @@ const lesson1Data = {
                 questions: [
                     {
                         type: "en_to_tv",
-                        tv: NOM(nouns.man) + " " + V(verbs.sleep, nouns.man.class, "3rd", "singular", "perfective present"),
+                        tv: `${NOM(getWord("man"))} ${V(getWord("sleep"), "animate", "3rd", "singular", "present perfective")}`,
                         en: "the man is sleeping",
-                        distractors: [NOM(nouns.man) + " " + V(verbs.laugh, nouns.man.class, "3rd", "singular", "perfective present"), NOM(nouns.woman) + " " + V(verbs.sleep, nouns.woman.class, "3rd", "singular", "perfective present")]
+                        distractors: [
+                            `${NOM(getWord("man"))} ${V(getWord("laugh"), "animate", "3rd", "singular", "present perfective")}`,
+                            `${NOM(getWord("woman"))} ${V(getWord("sleep"), "animate", "3rd", "singular", "present perfective")}`
+                        ]
                     },
                     {
                         type: "en_to_tv",
-                        tvaali: NOM(nouns.bird) + " " + ACC(nouns.grass) + " " + V(verbs.love, nouns.bird.class, "3rd", "singular", "perfective present"),
-                        english: "the bird loves grass",
-                        distractors: [NOM(nouns.cat) + " " + ACC(nouns.grass) + " " + V(verbs.love, nouns.bird.class, "3rd", "singular", "perfective present"),NOM(nouns.woman) + " " + ACC(nouns.man) + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present")]
+                        tv: `${NOM(getWord("bird"))} ${ACC(getWord("grass"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`,
+                        en: "the bird loves grass",
+                        distractors: [
+                            `${NOM(getWord("cat"))} ${ACC(getWord("grass"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`,
+                            `${NOM(getWord("woman"))} ${ACC(getWord("man"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`
+                        ]
                     },
                     {
                         type: "en_to_tv",
-                        tvaali: NOM(nouns.cat) + " " + ACC(nouns.bird) + " " + V(verbs.see, nouns.cat.class, "3rd", "singular", "perfective present"),
-                        english: "the cat sees the bird",
-                        distractors: [NOM(nouns.cat) + " " + ACC(nouns.bird) + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),NOM(nouns.cat) + " " + NOM(nouns.bird) + " " + V(verbs.see, nouns.cat.class, "3rd", "singular", "perfective present")]
+                        tv: `${NOM(getWord("cat"))} ${ACC(getWord("bird"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
+                        en: "the cat sees the bird",
+                        distractors: [
+                            `${NOM(getWord("cat"))} ${ACC(getWord("bird"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
+                            `${NOM(getWord("cat"))} ${NOM(getWord("bird"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`
+                        ]
                     },
                     {
                         type: "en_to_tv",
-                        tvaali: ACC(nouns.woman, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                        tvaali: `${ACC(getWord("woman"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
                         english: "i see the woman",
-                        distractors: [NOM(nouns.woman, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),NOM(nouns.woman, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present")]
+                        distractors: [
+                            `${NOM(getWord("woman"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
+                            `${ACC(getWord("woman"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`
+                        ]
                     },
                     {
                         type: "en_to_tv",
-                        tvaali: ACC(nouns.sun, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present"),
-                        english: "she sees the sun",
-                        distractors: [ACC(nouns.sun, "singular") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),NOM(nouns.sun, "singular") + " " + V(verbs.see, "animate", "3rd", "singular", "perfective present")]
+                        tv: `${ACC(getWord("sun"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`,
+                        en: "she sees the sun",
+                        distractors: [
+                            `${ACC(getWord("sun"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
+                            `${NOM(getWord("sun"))} ${V(getWord("see"), "animate", "3rd", "singular", "present perfective")}`
+                        ]
                     },
                 ]
             },
@@ -413,21 +425,20 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.stone, "plural") + " " + V(verbs.fall, nouns.stone.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${NOM(getWord("stone"))} ${V(getWord("fall"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the stone falls", "the stone is falling"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.sun, "plural") + " " + V(verbs.laugh, nouns.sun.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${NOM(getWord("sun"))} ${V(getWord("laugh"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the sun laughs", "the sun is laughing"]
                     },
                     {
-                        lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.grass, "plural") + " " + V(verbs.sleep, nouns.grass.class, "3rd", "plural", "perfective present"),
-                        english: ["the grass sleeps", "the grass is sleeping"]
-                    },
+                        tv: `${NOM(getWord("grass"))} ${V(getWord("sleep"), "inanimate", "3rd", "plural", "present perfective")}`,
+                        en: ["the grass sleeps", "the grass is sleeping"]
+                    }
                 ]
             },
         ]},
@@ -454,31 +465,31 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.stone, "plural") + " " + ACC(nouns.earth, "plural") + " " + V(verbs.hit, nouns.stone.class, "3rd", "plural", "perfective present"), 
+                        tvaali: `${ERG(getWord("stone"), "plural")} ${ACC(getWord("earth"), "plural")} ${V(getWord("hit"), "inanimate", "3rd", "plural", "present perfective")}`, 
                         english: ["the stone hits the earth", "stone is hitting the earth"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.snow, "plural") + " " + ACC(nouns.grass, "plural") + " " + V(verbs.hit, nouns.snow.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${ERG(getWord("snow"), "plural")} ${ACC(getWord("grass"), "plural")} ${V(getWord("hit"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the snow hits the grass", "snow hits the grass", "the snow is hitting the grass", "snow is hitting the grass"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.water, "plural") + " " + ACC(nouns.fire, "singular") + " " + V(verbs.hit, nouns.water.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${ERG(getWord("water"), "plural")} ${ACC(getWord("fire"), "singular")} ${V(getWord("hit"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the water hits the fire", "water hits the fire", "water is hitting the fire", "the water is hitting the fire"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.water, "plural") + " " + ACC(nouns.stone, "plural") + " " + V(verbs.carve, nouns.water.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${ERG(getWord("water"), "plural")} ${ACC(getWord("stone"), "plural")} ${V(getWord("carve"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the water carves the stone", "water carves the stone", "water is carving the stone", "the water is carving the stone"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.grass, "plural") + " " + ACC(nouns.water, "plural") + " " + V(verbs.eat, nouns.grass.class, "3rd", "plural", "perfective present"),
+                        tvaali: `${ERG(getWord("grass"), "plural")} ${ACC(getWord("water"), "plural")} ${V(getWord("eat"), "inanimate", "3rd", "plural", "present perfective")}`,
                         english: ["the grass eats the water", "grass eats the water", "the grass is eating the water", "grass is eating the water", "grass eats water", "grass is eating water", "the grass eats water", "the grass is eating water"]
                     },
                 ]
@@ -502,43 +513,43 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.woman, "singular") + " " + ACC(nouns.sun, "plural") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"), 
+                        tvaali: `${NOM(getWord("woman"))} ${ACC(getWord("sun"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`, 
                         english: "the woman loves the sun"
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ACC(nouns.snow, "plural") + " " + V(verbs.see, "animate", "1st", "singular", "perfective present"),
+                        tvaali: `${ACC(getWord("snow"))} ${V(getWord("see"), "animate", "1st", "singular", "present perfective")}`,
                         english: ["I see snow", "I see the snow"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.man, "singular") + " " + ACC(nouns.animal, "singular") + " " + V(verbs.eat, nouns.man.class, "3rd", "singular", "perfective present"), 
+                        tvaali: `${NOM(getWord("man"))} ${ACC(getWord("animal"))} ${V(getWord("eat"), "animate", "3rd", "singular", "present perfective")}`, 
                         english: ["the man eats the animal", "the man is eating the animal"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: ERG(nouns.water, "plural") + " " + V(verbs.fall, nouns.water.class, "3rd", "plural", "perfective present"), 
+                        tvaali: `${NOM(getWord("water"))} ${V(getWord("fall"), "inanimate", "3rd", "plural", "present perfective")}`, 
                         english: ["water is falling", "the water falls", "the water is falling", "water falls"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.fire, "singular") + " " + ACC(nouns.earth, "plural") + " " + V(verbs.carve, nouns.fire.class, "3rd", "singular", "perfective present"), 
+                        tvaali: `${ERG(getWord("fire"))} ${ACC(getWord("earth"))} ${V(getWord("carve"), "inanimate", "3rd", "singular", "present perfective")}`, 
                         english: ["fire carves the earth", "fire is carving the earth", "the fire is carving the earth", "the fire carves the earth"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.child, "singular") + " " + ACC(nouns.woman, "singular") + " " + V(verbs.become, nouns.child.class, "3rd", "singular", "perfective present"), 
+                        tvaali: `${NOM(getWord("child"))} ${ACC(getWord("woman"))} ${V(getWord("become"), "animate", "3rd", "singular", "present perfective")}`, 
                         english: ["the child is becoming a woman", "the child becomes a woman"]
                     },
                     {
                         lessonId: 1,
                         type: "tv_to_en",
-                        tvaali: NOM(nouns.cattle, "singular") + " " + ACC(nouns.grass, "plural") + " " + V(verbs.eat, nouns.cattle.class, "3rd", "singular", "perfective present"), 
+                        tvaali: `${NOM(getWord("cattle"))} ${ACC(getWord("grass"))} ${V(getWord("eat"), "animate", "3rd", "singular", "present perfective")}`, 
                         english: ["the cattle eats the grass", "the cattle is eating the grass", "cattle eats grass", "cattle is eating grass"]
                     },
                 ]
@@ -559,19 +570,19 @@ const lesson1Data = {
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: V(verbs.sleep, "animate", "1st", "singular", "perfective present"),
+                        tvaali: `${V(getWord("sleep"), "animate", "1st", "singular", "present perfective")}`,
                         english: ["I sleep", "I am sleeping"]
                     },
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: V(verbs.laugh, "animate", "3rd", "singular", "perfective present"),
+                        tvaali: `${V(getWord("laugh"), "animate", "3rd", "singular", "present perfective")}`,
                         english: ["he is laughing", "she is laughing", "he laughs", "she laughs"]
                     },
                     {
                         lessonId: 1,
                         type: "en_to_tv",
-                        tvaali: NOM(nouns.woman, "singular") + " " + ACC(nouns.water, "plural") + " " + V(verbs.love, nouns.woman.class, "3rd", "singular", "perfective present"),
+                        tvaali: `${NOM(getWord("woman"))} ${ACC(getWord("water"))} ${V(getWord("love"), "animate", "3rd", "singular", "present perfective")}`,
                         english: "the woman loves water"
                     },
                 ]

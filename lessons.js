@@ -30,6 +30,25 @@ function startSubLesson(lessonId, subIndex) {
     renderLesson();
 }
 
+function getVocabMetadata(tvaaliRoot) {
+    // Find the word in the lexicon by its Tvaali stem/root
+    const wordObj = lexicon.find(w => w.tv === tvaaliRoot);
+    if (!wordObj) return { english: "Unknown", meta: "" };
+
+    const entry = wordObj.entries[0];
+    const english = entry.senses[0].en[0]; // Get the first English synonym
+    let meta = "";
+
+    if (entry.type === 'noun') {
+        const animacy = entry.class.toLowerCase();
+        meta = `<span class="meta-tag tag-${animacy}">${animacy}</span>`;
+    } else if (entry.type === 'verb') {
+        meta = `<span class="meta-tag tag-verb">verb</span>`;
+    }
+    
+    return { english, meta };
+}
+
 // Writes the HTML code to render the lesson
 function renderLesson() {
     if (!activeLesson) {
@@ -37,35 +56,18 @@ function renderLesson() {
         return;
     }
 
-    // RESET STATE
     isCorrect = false; 
-
     const app = document.getElementById('app');
 
-    // 1. INTRO CARD CHECK: Only show if it's the very first part of the whole lesson
+    // 1. INTRO CARD CHECK
     if (currentSubLessonIndex === 0 && currentModuleIndex === 0 && currentSubStep === 0 && !window.introFinished) {
         
         let vocabListHtml = "";
-        
-        // Grab the full lesson vocabulary list
         const displayWords = activeLesson.newWords || [];
 
         displayWords.forEach(tvaaliRoot => {
-            // Look up English name and type from your dictionary objects
-            const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
-            const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
-            
-            let english = "Unknown";
-            let meta = "";
-            
-            if (nounEntry) {
-                english = nounEntry[0];
-                const animacy = nounEntry[1].class.toLowerCase();
-                meta = `<span class="meta-tag tag-${animacy}">${animacy}</span>`;
-            } else if (verbEntry) {
-                english = verbEntry[0];
-                meta = `<span class="meta-tag">verb</span>`;
-            }
+            // UPDATED: Use the new lexicon helper
+            const { english, meta } = getVocabMetadata(tvaaliRoot);
 
             vocabListHtml += `
                 <div class="intro-vocab-item">
@@ -76,11 +78,11 @@ function renderLesson() {
                     <span class="tv">${tvaaliRoot}</span>
                 </div>
             `;
-        }); // End of forEach
+        });
 
         app.innerHTML = `
             <div class="nav-container">
-                <button class="dict-btn" onclick="renderHome()">⬅ Back</button>
+                <button class="primary-btn" onclick="renderHome()">⬅ Back</button>
                 <button class="info-btn" onclick="showInfo(${activeLesson.id})">ⓘ</button>
             </div>
             <div class="card intro-card">
@@ -99,7 +101,6 @@ function renderLesson() {
         `;
         return;
     }
-
     const module = activeLesson.currentSubModules[currentModuleIndex];
     if (!module) {
         showEndScreen();
@@ -134,7 +135,7 @@ function renderLesson() {
     const navDiv = document.createElement('div');
     navDiv.className = "nav-container";
     navDiv.innerHTML = `
-        <button class="dict-btn" onclick="window.renderHome()">⬅ Back</button>
+        <button class="primary-btn" onclick="window.renderHome()">⬅ Back</button>
         <button class="info-btn" onclick="showInfo(${activeLesson.id})">ⓘ</button>
     `;
     app.prepend(navDiv);
@@ -229,10 +230,12 @@ function renderVocabDrill(module) {
 
     } else {
         const primaryAns = Array.isArray(expectedAnswer) ? expectedAnswer[0] : expectedAnswer;
-        document.getElementById('feedback').innerText = 
-            isEnToTv ? `Not quite! The Tvaali word is "${primaryAns}"` 
-                     : `Not quite! It means "${primaryAns}"`;
-        document.getElementById('feedback').style.color = "red";
+        
+        const feedback = document.getElementById('feedback');
+        feedback.innerText = isEnToTv 
+            ? `Not quite! The Tvaali word is "${primaryAns}"` 
+            : `Not quite! It means "${primaryAns}"`;
+        feedback.style.color = "red";
     }
 };
 }
@@ -270,21 +273,24 @@ window.checkSort = function(word, choice, clickedButton) {
     const module = activeLesson.currentSubModules[currentModuleIndex];
     const feedback = document.getElementById('feedback');
     
-    if (!module || !module.groups) {
-        console.error("Module or groups not found!");
-        return;
-    }
+    if (!module || !module.groups) return;
 
-    const isCorrectChoice = module.groups[choice].includes(word);
+    // Standardize comparison to avoid case or whitespace issues
+    const isCorrectChoice = module.groups[choice].some(w => w.toLowerCase() === word.toLowerCase());
     
     if (isCorrectChoice) {
         showSuccessAndContinue(module);
     } else {
         feedback.innerText = "In Tvaali logic, that belongs elsewhere!";
         feedback.style.color = "red";
+        // Visual shake/color feedback
         if (clickedButton) {
+            clickedButton.classList.add('error-shake'); // Add a CSS shake if you have one
             clickedButton.style.backgroundColor = "#ffcccc";
-            setTimeout(() => clickedButton.style.backgroundColor = "", 500);
+            setTimeout(() => {
+                clickedButton.style.backgroundColor = "";
+                clickedButton.classList.remove('error-shake');
+            }, 500);
         }
     }
 };
@@ -294,20 +300,29 @@ function renderClassificationModule(module) {
     const app = document.getElementById('app');
 
     if (currentSubStep === 0 && !module.shuffled) {
-        module.words = shuffleArray(module.words);
+        // If the lesson provides full word objects, great. 
+        // If it provides strings, we find the word in the lexicon.
+        module.activeWords = module.words.map(item => {
+            const wordObj = lexicon.find(w => w.tv === item.word || w.tv === item);
+            return {
+                tv: wordObj ? wordObj.tv : item.word,
+                // Use lexicon value if type isn't explicitly defined in the lesson
+                isTransitive: item.type !== undefined ? item.type : (wordObj?.entries[0].transitive ?? true)
+            };
+        });
+        module.activeWords = shuffleArray(module.activeWords);
         module.shuffled = true;
     }
 
-    const item = module.words[currentSubStep];
+    const item = module.activeWords[currentSubStep];
     const relevantNewWords = module.newWords || activeLesson.newWords || [];
-    const wrappedWord = wrapWords(item.word, true, relevantNewWords);
+    const wrappedWord = wrapWords(item.tv, true, relevantNewWords);
     
     app.innerHTML = `
         <h1>${module.title}</h1>
         <div class="card">
             <p>${module.description}</p>
             <h2 class="large-tv">${wrappedWord}</h2>
-            <p><em>${item.hint || ""}</em></p>
             <div class="sorting-buttons">
                 <button class="primary-btn" onclick="checkClassify(true, this)">Transitive</button>
                 <button class="primary-btn" onclick="checkClassify(false, this)">Intransitive</button>
@@ -325,7 +340,7 @@ window.checkClassify = (userChoice, clickedButton) => {
     if (userChoice === item.type) {
         showSuccessAndContinue(module);
     } else {
-        feedback.innerText = "Not quite!";
+        feedback.innerText = item.isTransitive ? "This verb needs an object!" : "This verb stands alone!";
         feedback.style.color = "red";
         if (clickedButton) {
             clickedButton.style.backgroundColor = "#ffcccc";
@@ -377,22 +392,26 @@ function renderMultipleChoice(module) {
 
     const q = module.activeQuestions[currentSubStep];
     const isEnToTv = q.type === "en_to_tv";
-    const prompt = isEnToTv ? (q.en || q.english) : (q.tv || q.tvaali);
+    
+    // Support synonyms: if en is an array, show the first one as the prompt
+    const prompt = isEnToTv 
+        ? (Array.isArray(q.en || q.english) ? (q.en || q.english)[0] : (q.en || q.english))
+        : (q.tv || q.tvaali);
+        
     const correctAns = isEnToTv ? (q.tv || q.tvaali) : (q.en || q.english);
 
     let finalChoices = [];
 
-    // Check if you provided manual distractors in the lesson file
     if (q.distractors && q.distractors.length > 0) {
         finalChoices = shuffleArray([correctAns, ...q.distractors]);
     } else {
-        // Fallback to random distractors
-        const allTvaaliRoots = Object.values(nouns).map(n => n.root).concat(Object.values(verbs).map(v => v.stem));
-        const allEnglishTerms = Object.keys(nouns).concat(Object.keys(verbs));
-        const pool = isEnToTv ? allTvaaliRoots : allEnglishTerms;
+        // UPDATED: Pull from Lexicon instead of old objects
+        const pool = isEnToTv 
+            ? lexicon.map(w => w.tv) 
+            : lexicon.map(w => w.entries[0].senses[0].en[0]);
         
         let randomDistractors = pool
-            .filter(item => item && item.toLowerCase() !== correctAns.toLowerCase())
+            .filter(item => item && item.toLowerCase() !== (Array.isArray(correctAns) ? correctAns[0] : correctAns).toLowerCase())
             .sort(() => 0.5 - Math.random())
             .slice(0, 2);
             
@@ -425,8 +444,12 @@ window.checkMCQ = function(choice, correct, btn) {
     const module = activeLesson.currentSubModules[currentModuleIndex];
     const feedback = document.getElementById('feedback');
     
-    if (choice.toLowerCase() === correct.toLowerCase()) {
-        btn.style.backgroundColor = "#4CAF50"; // Green success
+    // Handle both string and array for 'correct'
+    const correctList = Array.isArray(correct) ? correct : [correct];
+    const isRight = correctList.some(c => c.toLowerCase() === choice.toLowerCase());
+    
+    if (isRight) {
+        btn.style.backgroundColor = "#4CAF50";
         showSuccessAndContinue(module);
     } else {
         btn.style.backgroundColor = "#f44336"; // Red error
@@ -474,7 +497,6 @@ window.showInfo = function(lessonId) {
 
     const modal = document.getElementById('infoModal');
     const content = document.getElementById('modalContent'); 
-
     if (!modal || !content) return;
 
     let vocabCards = "";
@@ -484,18 +506,23 @@ window.showInfo = function(lessonId) {
         vocabCards = `<p style="text-align:center; color:#666; padding:20px;">No new vocabulary introduced in this lesson.</p>`;
     } else {
         wordsToDisplay.forEach(tvaaliRoot => {
-            const nounEntry = Object.entries(nouns).find(([en, obj]) => obj.root === tvaaliRoot);
-            const verbEntry = Object.entries(verbs).find(([en, obj]) => obj.stem === tvaaliRoot);
+            // Find the word in the new lexicon
+            const wordObj = lexicon.find(w => w.tv === tvaaliRoot);
             
             let english = "Unknown";
             let meta = "";
 
-            if (nounEntry) {
-                english = nounEntry[0];
-                meta = `<span class="meta-tag tag-${nounEntry[1].class.toLowerCase()}">${nounEntry[1].class}</span>`;
-            } else if (verbEntry) {
-                english = verbEntry[0];
-                meta = `<span class="meta-tag tag-verb">verb</span>`;
+            if (wordObj) {
+                const entry = wordObj.entries[0];
+                // Get the first synonym
+                english = entry.senses[0].en[0];
+                
+                if (entry.type === 'noun') {
+                    const animacy = entry.class.toLowerCase();
+                    meta = `<span class="meta-tag tag-${animacy}">${entry.class}</span>`;
+                } else if (entry.type === 'verb') {
+                    meta = `<span class="meta-tag tag-verb">verb</span>`;
+                }
             }
             
             vocabCards += `
@@ -538,49 +565,56 @@ window.closeModal = function() {
 // Hover over word to show translation
 function wrapWords(sentence, isTvaali = false, newWordsList = []) {
     if (!sentence) return "";
-    const words = (Array.isArray(sentence) ? sentence[0] : sentence).split(" ");
+    
+    // 1. Ensure we have a string and split it
+    const sentenceStr = Array.isArray(sentence) ? sentence[0] : sentence;
+    const words = sentenceStr.split(" ");
+    
+    // 2. Get the morphology map once, rather than re-generating inside the loop
+    // We assume you have a global variable 'morphologyMap' or call the function here
+    const lookupMap = isTvaali ? (window.tvaaliLookup || generateMorphologyMap()) : null;
     
     return words.map(word => {
         const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, "");
-        if (["the", "is", "a", "an"].includes(cleanWord)) return word;
+        
+        // Skip common English particles if we are in English mode
+        if (!isTvaali && ["the", "is", "a", "an", "and"].includes(cleanWord)) return word;
 
         let info = "";
 
         if (isTvaali) {
-    const match = tvaaliLookup[cleanWord];
-    
-    if (match) {
-        if (match.type === 'noun') {
+            // FIX: Access the pre-calculated lookup map
+            const match = lookupMap[cleanWord]; 
+            
+            if (match) {
                 const d = match.details;
-                const grammarStr = d ? ` (${d.case} ${d.number})` : "";
-                const className = match.data.class ? match.data.class.charAt(0).toUpperCase() + match.data.class.slice(1) : "";
-                
-                info = `En: ${match.en} | ${className}${grammarStr}`;
-            } 
-            else if (match.type === 'verb') {
-                const d = match.details;
-                const detailStr = d ? ` (${d.person} ${d.number} ${d.tense})` : "";
-                const englishName = match.en || (match.data && match.data.en) || "Unknown";
-                info = `Verb: ${englishName}${detailStr}`;
-            } 
-            else if (match.type === 'number') {
-                // Show the digit value for Tvaali numbers
-                info = `Digit: ${match.value}`;
+                if (match.type === 'noun') {
+                    // Pull class from the data entry
+                    const className = match.data.entries[0].class || "animate";
+                    const grammarStr = d ? ` (${d.case} ${d.number})` : "";
+                    info = `En: ${match.en} | ${className}${grammarStr}`;
+                } 
+                else if (match.type === 'verb') {
+                    // Extract verb details
+                    const detailStr = d ? ` (${d.person} ${d.number} ${d.tense})` : "";
+                    info = `Verb: ${match.en}${detailStr}`;
+                }
             }
-        }
-    } else {
-            // English lookup...
-            const nounKey = Object.keys(nouns).find(k => cleanWord === k.toLowerCase());
-            const verbKey = Object.keys(verbs).find(k => cleanWord.includes(k.toLowerCase()));
-            if (nounKey) info = `Tv: ${nouns[nounKey].root}`;
-            else if (verbKey) info = `Tv: ${verbs[verbKey].stem}`;
-            else if (!isNaN(cleanWord)) info = `Tv: ${NUM(parseInt(cleanWord))}`;
+        } else {
+            // English lookup
+            const wordObj = findByEn(cleanWord);
+            if (wordObj) {
+                const type = wordObj.entries[0].type;
+                info = `Tv: ${wordObj.tv} (${type})`;
+            }
         }
 
         if (info) {
-            const highlight = (newWordsList || []).some(nw => cleanWord.includes(nw.toLowerCase())) ? "new-word-highlight" : "";
-            return `<span class="word-tooltip ${highlight}">${word}<span class="tooltip-text">${info}</span></span>`;
+            const isNew = (newWordsList || []).some(nw => cleanWord === nw.toLowerCase());
+            const highlightClass = isNew ? "new-word-highlight" : "";
+            return `<span class="word-tooltip ${highlightClass}">${word}<span class="tooltip-text">${info}</span></span>`;
         }
+        
         return word; 
     }).join(" ");
 }
@@ -594,65 +628,66 @@ function markWordsAsSeen() {
 
     let textToClean = "";
 
-    // If it's a sorting module, we mark the specific word currently being shown
     if (module.type === "sorting" && module.shuffledList) {
         textToClean = module.shuffledList[currentSubStep];
     } 
-    // Otherwise, use your existing translation/drill logic
     else {
-        const questionList = module.useGlobalQuestions ? activeLesson.questions : module.questions;
-        if (module.type === "translation" && questionList) {
-            const q = questionList[currentSubStep];
-            if (q) {
-                textToClean = (q.type === "tv_to_en") ? q.tvaali : (Array.isArray(q.english) ? q.english[0] : q.english);
+        // Use activeQuestions if it exists (from shuffling), otherwise fallback
+        const questionList = module.activeQuestions || module.questions || [];
+        const q = questionList[currentSubStep];
+        
+        if (q) {
+            if (module.type === "translation") {
+                // Grab the prompt text regardless of direction
+                textToClean = (q.type === "tv_to_en") ? q.tvaali : q.english;
+            } else if (module.type === "vocabDrill") {
+                textToClean = q.tv;
             }
-        } else if (module.type === "vocab_drill" && module.questions) {
-            const q = module.questions[currentSubStep];
-            if (q) textToClean = q.tv;
         }
     }
 
     if (textToClean) {
-        const words = String(textToClean).split(" ");
-        words.forEach(word => {
-            const clean = word.toLowerCase().replace(/[.,!?;]/g, "");
-            seenWords.add(clean);
+        // Handle cases where textToClean might be an array (English synonyms)
+        const items = Array.isArray(textToClean) ? textToClean : [textToClean];
+        
+        items.forEach(item => {
+            const words = String(item).split(/\s+/); // Split by any whitespace
+            words.forEach(word => {
+                const clean = word.toLowerCase().replace(/[.,!?;:]/g, "");
+                if (clean) seenWords.add(clean);
+            });
         });
     }
 }
 
 // Check answer function
-function checkAnswer(questionsToUse) {
+window.checkAnswer = function(questionsToUse) {
     const userInput = document.getElementById('user-input').value.trim().toLowerCase();
     const feedback = document.getElementById('feedback');
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
     
-    // Safety check: Use passed-in list or global fallback
     const source = questionsToUse || activeQuestions;
     const q = source[currentSubStep]; 
 
-    if (!q) {
-        console.error("No question found at step", currentSubStep);
-        return;
-    }
+    if (!q) return;
 
-    const correctAnswer = q.type === "en_to_tv" ? q.tvaali : q.english;
+    // Use q.english or q.en (to match different module formats)
+    const correctAnswer = q.type === "en_to_tv" ? (q.tvaali || q.tv) : (q.english || q.en);
     
-    // Convert everything to an array for easy checking
-    const answers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
-    const answersLower = answers.map(a => a.toLowerCase());
+    // Ensure we are working with a flat array of strings
+    const answers = Array.isArray(correctAnswer) ? correctAnswer.flat() : [correctAnswer];
+    const answersLower = answers.map(a => String(a).toLowerCase());
 
     if (answersLower.includes(userInput)) {
-        // SUCCESS LOGIC
         isCorrect = true; 
         
-        // Find other correct answers the user didn't type
-        const others = answers.filter(a => a.toLowerCase() !== userInput);
+        // Improve feedback: if there are multiple synonyms, show the NEXT one as a suggestion
+        const others = answers.filter(a => String(a).toLowerCase() !== userInput);
         let successMsg = "Correct!";
         
         if (others.length > 0) {
-            successMsg += ` (Another solution: "${others[0]}")`;
+            successMsg += ` (Also: "${others[0]}")`; // Show one alternative clearly
         }
 
         feedback.innerText = successMsg;
@@ -661,12 +696,12 @@ function checkAnswer(questionsToUse) {
         if (nextBtn) nextBtn.style.display = "block";
         if (submitBtn) submitBtn.style.display = "none";
     } else {
-        // FAILURE LOGIC
-        const displayAnswer = answers[0];
-        feedback.innerText = `Incorrect. A correct answer would be: ${displayAnswer}`;
+        // Show the primary answer (first in array)
+        const primaryAns = Array.isArray(answers) ? answers[0] : answers;
+        feedback.innerText = `Incorrect. A correct answer would be: ${primaryAns}`;
         feedback.style.color = "red";
     }
-}
+};
 
 // Correct message 
 function showSuccessAndContinue(module) {
@@ -761,3 +796,4 @@ window.showEndScreen = showEndScreen;
  * 5. Word Tooltip Logic (Used by wrapWords)
  */
 window.wrapWords = wrapWords;
+
